@@ -1,0 +1,17 @@
+{
+  "name": "geoguessr-event-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "geoguessr-event-framework.js",
+  "scripts": {
+    "build": "npx tsc -t ES6 ./geoguessr-event-framework.ts",
+		"postbuild": "npx esbuild geoguessr-event-framework.js --minify --outfile=geoguessr-event-framework.min.js"
+  },
+  "keywords": [],
+  "author": "miraclewhips",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.19.2",
+    "typescript": "^5.2.2"
+  }
+}
