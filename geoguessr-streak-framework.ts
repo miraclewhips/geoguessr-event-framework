@@ -127,12 +127,7 @@ class GeoGuessrStreakFramework {
 				let classLabel = gameScore.querySelector('div[class^="status_label"]').className;
 				let valueLabel = gameScore.querySelector('div[class^="status_value"]').className;
 	
-				panel.innerHTML = `
-					<div class="${gameScore.getAttribute('class')}">
-						<div class="${classLabel}">${this.options.name.toUpperCase()}</div>
-						<div id="streak-counter-value-${this.options.storage_identifier}" class="${valueLabel}"></div>
-					</div>
-				`;
+				panel.innerHTML = `<div class="${gameScore.getAttribute('class')}"><div class="${classLabel}">${this.options.name.toUpperCase()}</div><div id="streak-counter-value-${this.options.storage_identifier}" class="${valueLabel}"></div></div>`;
 	
 				gameScore.parentNode.append(panel);
 			}
