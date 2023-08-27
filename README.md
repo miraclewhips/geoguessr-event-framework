@@ -19,9 +19,9 @@ You can add it to your own Userscript using the `@require` parameter in your Use
 // ==/UserScript==
 
 GeoGuessrEventFramework.init().then((GEF) => {
-	GEF.events.addEventListener('round_start', (event) => {
-		console.log(event.detail);
-	});
+  GEF.events.addEventListener('round_start', (event) => {
+    console.log(event.detail);
+  });
 });
 ```
 
@@ -44,17 +44,17 @@ GeoGuessrEventFramework.init().then((GEF) => {
 The current state of the game is included in the `detail` field of the event.
 ```javascript
 {
-	current_game_id: string,
-	is_challenge_link: boolean,
-	current_round: number,
-	round_in_progress: boolean,
-	game_in_progress: boolean,
-	total_score: number,
-	rounds: [{
-		score: number,
-		location: {lat: number, lng: number},
-		player_guess: {lat: number, lng: number},
-	}],
+  current_game_id: string,
+  is_challenge_link: boolean,
+  current_round: number,
+  round_in_progress: boolean,
+  game_in_progress: boolean,
+  total_score: number,
+  rounds: [{
+    score: number,
+    location: {lat: number, lng: number},
+    player_guess: {lat: number, lng: number},
+  }],
 }
 ```
 
