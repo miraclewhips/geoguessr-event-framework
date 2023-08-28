@@ -56,40 +56,52 @@ const GSF = new GeoGuessrStreakFramework({
 }
 ```
 
-#### `storage_identifier: string`
+### `storage_identifier: string`
+default: `'geoguessr-streak-framework'`
 - Identifier used for the streak script when adding elements to the page and saving streak data to localStorage (must be unique or else it will clash with other streak scripts with the same ID).
 
-#### `name: string`
+### `name: string`
+default: `'Country Streak'`
 - Name displayed in the UI when showing the streak count.
 
-#### `terms.single: string`
+### `terms.single: string`
+default: `'country'`
 - Name used when describing the streak in the singular (i.e "country").
 
-#### `terms.plural: string`
+### `terms.plural: string`
+default: `'countries'`
 - Name used when describing the streak in the plural (i.e "countries").
 
-#### `enabled_on_challenges: boolean`
+### `enabled_on_challenges: boolean`
+default: `true`
 - Whether or not to track streaks when the user is playing challenge links.
 
-#### `automatic: boolean`
+### `automatic: boolean`
+default: `true`
 - Whether or not to automatically increment the streak after each round (if disabled the user must manually use the keyboard shortcuts to adjust the streak).
 
-#### `lanuage: string`
+### `lanuage: string`
+default: `'en'`
 - Language that OpenStreetMap results are returned in. Uses an [ISO 639-1 lanugage code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).
 
-#### `streak_type: string`
+### `streak_type: string`
+default: `'round'`
 - `round` or `game`. Whether or not the streak should be checked every round or at the end of every game. `game` option is best used in conjunction with a `custom_match_function`.
 
-#### `only_match_country_code: boolean`
+### `only_match_country_code: boolean`
+default: `true`
 - Marks the streak as correct if the country codes match but the names don't (useful for countries with overseas territories like Denmark including Greenland as a correct country streak).
 
-#### `query_openstreetmap: boolean`
+### `query_openstreetmap: boolean`
+default: `true`
 - Whether or not to query OpenStreetMap, or to just return the Lat/Lng coordinates. If it's set to `false` you must provide a `custom_match_function`.
 
-#### `address_matches: string[]`
+### `address_matches: string[]`
+default: `['country']`
 - List of properties to check for in the OpenStreetMap `address` object. Returns first match when iterating through the list (or `"Undefined"` if there are no matches). Since every country is different adding multiple fields to check, for example `['state', 'territory', 'province', 'county', 'municipality', 'ISO3166-2-lvl4']` for a state streak, will ensure that most/all countries will be supported in the streak.
 
-#### `custom_match_function: Function`
+### `custom_match_function: Function`
+default: `undefined`
 - Instead of using the `address_matches` property you can provide a custom function that you can write to do your own matching:
 ```javascript
 function custom_match_function(state, player_guess, actual_location) {
@@ -106,7 +118,8 @@ function custom_match_function(state, player_guess, actual_location) {
   - If `query_openstreetmap` is `false`:
     - `player_guess` and `actual_location` are `{lat: number, lng: number}` types.
 
-#### `keyboard_shortcuts: {reset: string, increment: string, decrement: string, restore: string}`
+### `keyboard_shortcuts: {reset: string, increment: string, decrement: string, restore: string}`
+default: `{increment: '1', decrement: '2', reset: '0', restore: '8'}`
   - `reset`: resets the streak counter to 0 (default `"0"`)
   - `increment`: increments the streak counter by 1 (default `"1"`)
   - `decrement`: decrements the streak counter by 1 (default `"2"`)

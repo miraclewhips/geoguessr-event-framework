@@ -27,16 +27,16 @@ GeoGuessrEventFramework.init().then((GEF) => {
 
 ## Events
 
-#### `game_start`
+### `game_start`
 - triggered at the start of round 1
 
-#### `game_end`
+### `game_end`
 - triggered at the end of round 5
 
-#### `round_start`
+### `round_start`
 - triggered at the start of every round
 
-#### `round_end`
+### `round_end`
 - triggered at the end of every round
 
 ### Event Data
@@ -60,13 +60,13 @@ The current state of the game is included in the `detail` field of the event.
 
 ## Properties
 
-#### `events`
+### `events`
 - Event object used to add/remove listeners
 
-#### `state`
+### `state`
 - The current state of the game can be accessed at any time by referencing the `state` property
 
 ## Methods
 
-#### `init()`
+### `init()`
 - Returns a Promise that resolves once the framework has loaded and is ready to use
