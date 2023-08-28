@@ -119,7 +119,7 @@ function custom_match_function(state, player_guess, actual_location) {
     - `player_guess` and `actual_location` are `{lat: number, lng: number}` types.
 
 ### `keyboard_shortcuts: {reset: string, increment: string, decrement: string, restore: string}`
-default: `{increment: '1', decrement: '2', reset: '0', restore: '8'}`
+default: `{reset: '0', increment: '1', decrement: '2', restore: '8'}`
   - `reset`: resets the streak counter to 0 (default `"0"`)
   - `increment`: increments the streak counter by 1 (default `"1"`)
   - `decrement`: decrements the streak counter by 1 (default `"2"`)
