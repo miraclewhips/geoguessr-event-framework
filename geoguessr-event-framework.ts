@@ -65,6 +65,7 @@ var GeoGuessrEventFramework;
 
 	function getPos(): LatLng {
 		const pos = GEF_SV.getPosition();
+		if(!pos) return {lat: null, lng: null};
 		return {lat: pos.lat(), lng: pos.lng()};
 	}
 

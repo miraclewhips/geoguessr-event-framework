@@ -50,6 +50,8 @@ var GeoGuessrEventFramework;
     }
     function getPos() {
         const pos = GEF_SV.getPosition();
+        if (!pos)
+            return { lat: null, lng: null };
         return { lat: pos.lat(), lng: pos.lng() };
     }
     function getSVLatLng() {

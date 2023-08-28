@@ -3,7 +3,10 @@
 			"target": "es6",
 			"module": "commonjs",
 			"declaration": false,
-			"noLib": false
+			"noLib": false,
+			"allowUnreachableCode": false,
+			"noUnusedParameters": true,
+			"noUnusedLocals": true
 	},
 	"include": [
 			"**/*"

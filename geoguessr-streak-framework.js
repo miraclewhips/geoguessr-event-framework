@@ -11,7 +11,6 @@ const CC_DICT = { "AX": "FI", "AS": "US", "AI": "GB", "AW": "NL", "BM": "GB", "B
 class GeoGuessrStreakFramework {
     constructor(options) {
         this.options = options;
-        this.events = new EventTarget();
         this.state = this.defaultState();
         if (typeof this.options.storage_identifier === 'string') {
             this.options.storage_identifier = this.options.storage_identifier.replace(/[^\w\d-_]/g, '');
@@ -29,9 +28,11 @@ class GeoGuessrStreakFramework {
             enabled_on_challenges: true,
             automatic: true,
             language: 'en',
+            streak_type: 'round',
             only_match_country_code: true,
-            address_matches: ['country'],
             query_openstreetmap: true,
+            address_matches: ['country'],
+            keyboard_shortcuts: { increment: '1', decrement: '2', reset: '0', restore: '8' },
         };
         this.options = Object.assign(defaults, this.options);
         this.loadState();
@@ -40,13 +41,14 @@ class GeoGuessrStreakFramework {
         if (!GeoGuessrEventFramework) {
             throw new Error('GeoGuessr Streak Framework requires GeoGuessr Event Framework (https://github.com/miraclewhips/geoguessr-event-framework). Please include this before you include GeoGuessr Streak Framework.');
         }
-        GeoGuessrEventFramework.init().then(GEF => {
-            GEF.events.addEventListener('round_start', (event) => {
-                console.log(`round ${event.detail.current_round} started`, event.detail);
+        this.events = GeoGuessrEventFramework;
+        this.events.init().then(GEF => {
+            console.log('GeoGuessr Streak Framework initialised.');
+            GEF.events.addEventListener('round_start', () => {
                 this.updateRoundPanel();
             });
-            GEF.events.addEventListener('round_end', (event) => {
-                console.log(`round ${event.detail.current_round} ended`, event.detail);
+            const event_name = this.options.streak_type === 'game' ? 'game_end' : 'round_end';
+            GEF.events.addEventListener(event_name, (event) => {
                 this.stopRound(event.detail);
             });
         });
@@ -104,7 +106,12 @@ class GeoGuessrStreakFramework {
             return `Loading...`;
         }
         if (this.state.streak > 0) {
-            return `It was <span style="color:#6cb928">${this.state.location_name}!</span> ${this.options.name}: <span style="color:#fecd19">${this.state.streak}</span>`;
+            if (this.state.guess_name || this.state.location_name) {
+                return `It was <span style="color:#6cb928">${this.state.guess_name || this.state.location_name}!</span> ${this.options.name}: <span style="color:#fecd19">${this.state.streak}</span>`;
+            }
+            else {
+                return `${this.options.name}: <span style="color:#fecd19">${this.state.streak}</span>`;
+            }
         }
         else {
             let suffix = `${this.options.terms.plural} in a row.`;
@@ -112,11 +119,11 @@ class GeoGuessrStreakFramework {
                 case 1:
                     suffix = `${this.options.terms.single}.`;
             }
-            let previousGuessText = `You didn't make a guess.`;
-            if (this.state.guess_name) {
+            let previousGuessText = ``;
+            if (this.state.guess_name && this.state.location_name) {
                 previousGuessText = `You guessed <span style="color:#f95252">${this.state.guess_name}</span>, unfortunately it was <span style="color:#6cb928">${this.state.location_name}</span>.`;
             }
-            return `${previousGuessText} Your streak ended after correctly guessing <span style="color:#fecd19">${this.state.previous_streak}</span> ${suffix}`;
+            return `${previousGuessText} Your streak ended after <span style="color:#fecd19">${this.state.previous_streak}</span> ${suffix}`;
         }
     }
     createStreakElement() {
@@ -134,13 +141,13 @@ class GeoGuessrStreakFramework {
     }
     updateSummaryPanel() {
         const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
-        if (scoreLayout) {
-            let panel = this.getSummaryPanel();
-            if (!panel) {
-                panel = this.createStreakElement();
-                panel.id = `streak-score-panel-summary-${this.options.storage_identifier}`;
-                scoreLayout.parentNode.insertBefore(panel, scoreLayout);
-            }
+        let panel = this.getSummaryPanel();
+        if (scoreLayout && !panel) {
+            panel = this.createStreakElement();
+            panel.id = `streak-score-panel-summary-${this.options.storage_identifier}`;
+            scoreLayout.parentNode.insertBefore(panel, scoreLayout);
+        }
+        if (panel) {
             panel.innerHTML = this.createStreakText();
         }
     }
@@ -202,10 +209,10 @@ class GeoGuessrStreakFramework {
                 const responseLocation = yield this.queryOSM(round.location);
                 this.state.checking_api = false;
                 if (this.options.custom_match_function) {
-                    let matchResult = this.options.custom_match_function(responseGuess, responseLocation);
-                    this.state.guess_name = matchResult.guess_name;
-                    this.state.location_name = matchResult.location_name;
-                    doesMatch = matchResult.guess_name == matchResult.location_name;
+                    const matchResult = this.options.custom_match_function(this.events.state, responseGuess, responseLocation);
+                    this.state.guess_name = matchResult.player_guess_name;
+                    this.state.location_name = matchResult.actual_location_name;
+                    doesMatch = matchResult.match;
                 }
                 else {
                     const guessCC = this.matchCountryCode(responseGuess === null || responseGuess === void 0 ? void 0 : responseGuess.address);
@@ -218,7 +225,10 @@ class GeoGuessrStreakFramework {
                 }
             }
             else {
-                doesMatch = this.options.custom_match_function(round.player_guess, round.location);
+                const matchResult = this.options.custom_match_function(this.events.state, round.player_guess, round.location);
+                this.state.guess_name = matchResult.player_guess_name;
+                this.state.location_name = matchResult.actual_location_name;
+                doesMatch = matchResult.match;
             }
             if (doesMatch) {
                 this.incrementStreakValue(1);
@@ -248,24 +258,22 @@ class GeoGuessrStreakFramework {
         this.updateStreakPanels();
     }
     setupKeyboardShortcuts() {
+        let keys = this.options.keyboard_shortcuts;
         document.addEventListener('keypress', (e) => {
             if (!this.getRoundPanel() && !this.getSummaryPanel())
                 return;
             switch (e.key) {
-                case '1':
+                case keys.reset:
+                    this.setStreakValue(0);
+                    break;
+                case keys.increment:
                     this.incrementStreakValue(1);
                     break;
-                case '2':
+                case keys.decrement:
                     this.incrementStreakValue(-1);
                     break;
-                case '8':
-                    this.setStreakValue(this.state.streak_backup);
-                    break;
-                case '0':
-                    if (this.state.streak !== 0) {
-                        this.state.streak_backup = this.state.streak;
-                    }
-                    this.setStreakValue(0);
+                case keys.restore:
+                    this.setStreakValue(this.state.streak_backup + 1);
                     break;
             }
             ;
