@@ -120,10 +120,10 @@ function custom_match_function(state, player_guess, actual_location) {
 
 ### `keyboard_shortcuts: {reset: string, increment: string, decrement: string, restore: string}`
 default: `{reset: '0', increment: '1', decrement: '2', restore: '8'}`
-  - `reset`: resets the streak counter to 0 (default `"0"`)
-  - `increment`: increments the streak counter by 1 (default `"1"`)
-  - `decrement`: decrements the streak counter by 1 (default `"2"`)
-  - `restore`: restores the streak counter to it's previous value (default `"8"`)
+  - `reset`: resets the streak counter to 0
+  - `increment`: increments the streak counter by 1
+  - `decrement`: decrements the streak counter by 1
+  - `restore`: restores the streak counter to it's previous value
 
 ## OpenStreetMap API JSON
 
