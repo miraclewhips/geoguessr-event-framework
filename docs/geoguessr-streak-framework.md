@@ -4,7 +4,7 @@ Framework to manage different types of streaks in GeoGuessr. Used in conjunction
 
 ## How to use it in your own Userscripts
 
-You can add it to your own Userscript using the `@require` parameter in your UserScript info. Make sure to include the `@match`, `@run-at`, and `@grant` parameters as well, as well as teh `@require` tag with the Event Framework.
+You can add it to your own Userscript using the `@require` parameter in your UserScript info. Make sure to include the `@match`, `@run-at`, and `@grant` parameters as well, as well as the `@require` tag with the Event Framework.
 
 ### Sample code
 
