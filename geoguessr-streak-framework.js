@@ -186,6 +186,8 @@ class GeoGuessrStreakFramework {
                 return;
             this.updateStreakPanels();
             const round = eventState.rounds[eventState.current_round - 1];
+            if (!round)
+                return;
             const guessIdentifier = `${eventState.current_game_id}-${eventState.current_round}`;
             if (guessIdentifier == this.state.last_guess_identifier) {
                 this.updateStreakPanels();

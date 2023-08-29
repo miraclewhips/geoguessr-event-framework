@@ -1,9 +1,23 @@
 type LatLng = {lat: number|null, lng: number|null};
 
 type GEF_Round = {
-	score: number,
 	location: LatLng,
 	player_guess: LatLng,
+	distance: {
+		meters: {
+			amount: number,
+			unit: string,
+		},
+		miles: {
+			amount: number,
+			unit: string,
+		}
+	},
+	score: {
+		amount: number,
+		unit: string,
+		percentage: number
+	}
 };
 	
 type GEF_State = {
@@ -12,120 +26,52 @@ type GEF_State = {
 	current_round: number,
 	round_in_progress: boolean,
 	game_in_progress: boolean,
-	total_score: number,
+	total_distance: {
+		meters: {
+			amount: number,
+			unit: string,
+		},
+		miles: {
+			amount: number,
+			unit: string,
+		}
+	},
+	total_score: {
+		amount: number,
+		unit: string,
+		percentage: number
+	},
 	rounds: Array<GEF_Round>,
+	map: {
+		id: string,
+		name: string,
+	},
 }
 
 var GeoGuessrEventFramework;
 
 (function() {
-	let GEF_SV, GEF_M;
-	let gmLoadPromise: Promise<void>;
-	let gmLatLngPrev: LatLng;
-	let gmLatLng: LatLng;
-	
-	function sleep(ms) {
-		return new Promise(resolve => setTimeout(resolve, ms));
-	}
+	let gApiData;
+	const default_fetch = window.fetch;
+	window.fetch = (function () {
+			return async function (...args) {
+					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(args[0].toString())) {
+						let result = await default_fetch.apply(window, args);
+						gApiData = await result.clone().json();
+						return result;
+					}
 
-	function overrideOnLoad(googleScript, observer, overrider) {
-		const oldOnload = googleScript.onload;
-		googleScript.onload = (event) => {
-			const google = window['google'];
-			if (google) {
-				observer.disconnect();
-				overrider(google);
-			}
-			if (oldOnload) {
-				oldOnload.call(googleScript, event);
-			}
-		}
-	}
+					return default_fetch.apply(window, args);
+			};
+	})();
 
-	function grabGoogleScript(mutations) {
-		for (const mutation of mutations) {
-			for (const newNode of mutation.addedNodes) {
-				const asScript = newNode;
-				if (asScript && asScript.src && asScript.src.startsWith('https://maps.googleapis.com/')) {
-					return asScript;
-				}
-			}
+	function getGAPIData(state: GEF_State): any {
+		if(gApiData && gApiData.token === state.current_game_id && gApiData.round === state.current_round) {
+			return gApiData;
 		}
+
 		return null;
 	}
-
-	function injecter(overrider) {
-		new MutationObserver((mutations, observer) => {
-			const googleScript = grabGoogleScript(mutations);
-			if (googleScript) {
-				overrideOnLoad(googleScript, observer, overrider);
-			}
-		}).observe(document.documentElement, { childList: true, subtree: true });
-	}
-
-	function getPos(): LatLng {
-		const pos = GEF_SV.getPosition();
-		if(!pos) return {lat: null, lng: null};
-		return {lat: pos.lat(), lng: pos.lng()};
-	}
-
-	async function getSVLatLng(): Promise<LatLng> {
-		await gmLoadPromise;
-		if(!GEF_SV) return {lat: null, lng: null};
-		await sleep(100);
-
-		return new Promise<LatLng>((resolve) => {
-			if(!gmLatLngPrev) {
-				const pos = getPos();
-				gmLatLngPrev = pos;
-				resolve(pos);
-			}else{
-				let listener = window['google'].maps.event.addListener(GEF_SV, 'status_changed', () => {
-					const pos = getPos();
-
-					if(gmLatLngPrev.lat != pos.lat && gmLatLngPrev.lng != pos.lng) {
-						window['google'].maps.event.removeListener(listener);
-						gmLatLngPrev = pos;
-						resolve(pos);
-					}
-				});
-			}
-		});
-	}
-
-	gmLoadPromise = new Promise((resolve, reject) => {
-		document.addEventListener('DOMContentLoaded', () => {
-			injecter(() => {
-				if(!window['google']) return reject();
-
-				const promiseList: Promise<void>[] = [];
-				
-				promiseList.push(new Promise((resolve) => {
-					window['google'].maps.StreetViewPanorama = class extends window['google'].maps.StreetViewPanorama {
-						constructor(...args) {
-							super(...args);
-							GEF_SV = this;
-							resolve();
-						}
-					}
-				}));
-	
-				promiseList.push(new Promise((resolve) => {
-					window['google'].maps.Map = class extends window['google'].maps.Map {
-						constructor(...args) {
-							super(...args);
-							GEF_M = this;
-							resolve();
-						}
-					}
-				}));
-
-				Promise.all(promiseList).then(() => {
-					return resolve();
-				});
-			});
-		});
-	});
 	
 	class GEF {
 		public events = new EventTarget();
@@ -142,17 +88,6 @@ var GeoGuessrEventFramework;
 			
 			const observer = new MutationObserver(this.checkState.bind(this));
 			observer.observe(el, { subtree: true, childList: true });
-
-			gmLoadPromise.then(() => {
-				GEF_M.addListener('click', (e) => {
-					if(!this.state.current_round || !this.state.round_in_progress) return;
-
-					this.state.rounds[this.state.current_round-1].player_guess = {
-						lat: e.latLng.lat(),
-						lng: e.latLng.lng()
-					};
-				});
-			});
 		}
 
 		public async init(): Promise<this> {
@@ -170,8 +105,13 @@ var GeoGuessrEventFramework;
 				current_round: 0,
 				round_in_progress: false,
 				game_in_progress: true,
-				total_score: 0,
+				total_score: {amount: 0, unit: 'points', percentage: 0},
+				total_distance: {
+					meters: {amount: 0, unit: 'km'},
+					miles: {amount: 0, unit: 'miles'}
+				},
 				rounds: [],
+				map: {id: '', name: ''},
 			}
 		}
 	
@@ -226,50 +166,83 @@ var GeoGuessrEventFramework;
 			this.state.current_game_id = this.getGameId();
 			this.state.is_challenge_link = this.getGameMode() == 'challenge';
 
-			if(this.state.current_round) {
-				this.state.rounds[this.state.current_round - 1] = {
-					score: 0,
-					location: {lat: null, lng: null},
-					player_guess: {lat: null, lng: null}
-				};
+			let gData = getGAPIData(this.state);
+
+			if(gData) {
+				this.state.map = {
+					id: gData.map,
+					name: gData.mapName
+				}
 			}
 
 			this.saveState();
+
+			console.log('round_start')
+			console.log(this.state)
 	
 			if(this.state.current_round === 1) {
 				this.events.dispatchEvent(new CustomEvent('game_start', {detail: this.state}));
 			}
 	
 			this.events.dispatchEvent(new CustomEvent('round_start', {detail: this.state}));
-
-			getSVLatLng().then((latlng) => {
-				gmLatLng = latlng;
-			});
 		}
 	
 		private async stopRound(): Promise<void> {
 			this.state.round_in_progress = false;
-	
-			// sleep for 1ms to give the score element a chance to display the round score
-			await sleep(1);
-	
-			const score = document.querySelector(`div[class^="round-result_pointsIndicatorWrapper__"] div[class^="shadow-text_root__"]`)?.textContent;
-	
-			if(score) {
-				const scoreInt = parseInt(score.replace(/[^\d]/g, ''));
-	
-				if(!isNaN(scoreInt) && this.state.current_round) {
-					this.state.rounds[this.state.current_round-1].score = scoreInt;
+
+			let gData = getGAPIData(this.state);
+
+			if(gData) {
+				const r = gData.rounds[this.state.current_round-1];
+				const g = gData.player.guesses[this.state.current_round-1];
+
+				this.state.rounds[this.state.current_round - 1] = {
+					location: {lat: r.lat, lng: r.lng},
+					player_guess: {lat: g.lat, lng: g.lng},
+					score: {
+						amount: parseFloat(g.roundScore.amount),
+						unit: g.roundScore.unit,
+						percentage: g.roundScore.percentage,
+					},
+					distance: {
+						meters: {
+							amount: parseFloat(g.distance.meters.amount),
+							unit: g.distance.meters.unit,
+						},
+						miles: {
+							amount: parseFloat(g.distance.miles.amount),
+							unit: g.distance.miles.unit,
+						},
+					}
+				}
+
+				this.state.total_score = {
+					amount: parseFloat(gData.player.totalScore.amount),
+					unit: gData.player.totalScore.unit,
+					percentage: gData.player.totalScore.percentage,
+				}
+
+				this.state.total_distance = {
+					meters: {
+						amount: parseFloat(gData.player.totalDistance.meters.amount),
+						unit: gData.player.totalDistance.meters.unit,
+					},
+					miles: {
+						amount: parseFloat(gData.player.totalDistance.miles.amount),
+						unit: gData.player.totalDistance.miles.unit,
+					},
+				}
+
+				this.state.map = {
+					id: gData.map,
+					name: gData.mapName
 				}
 			}
 	
-			this.state.total_score = this.state.rounds.reduce((a, b) => a += b.score, 0);
-
-			if(this.state.current_round && gmLatLng) {
-				this.state.rounds[this.state.current_round-1].location = gmLatLng;
-			}
-	
 			this.saveState();
+
+			console.log('round_end')
+			console.log(this.state)
 	
 			this.events.dispatchEvent(new CustomEvent('round_end', {detail: this.state}));
 	
