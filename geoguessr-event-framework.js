@@ -24,7 +24,7 @@ var GeoGuessrEventFramework;
         };
     })();
     function getGAPIData(state) {
-        if (gApiData && gApiData.token === state.current_game_id && gApiData.round === state.current_round) {
+        if (gApiData && gApiData.round === state.current_round) {
             return gApiData;
         }
         return null;
@@ -119,8 +119,6 @@ var GeoGuessrEventFramework;
                     };
                 }
                 this.saveState();
-                console.log('round_start');
-                console.log(this.state);
                 if (this.state.current_round === 1) {
                     this.events.dispatchEvent(new CustomEvent('game_start', { detail: this.state }));
                 }
@@ -128,6 +126,7 @@ var GeoGuessrEventFramework;
             });
         }
         stopRound() {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
             return __awaiter(this, void 0, void 0, function* () {
                 this.state.round_in_progress = false;
                 let gData = getGAPIData(this.state);
@@ -138,34 +137,34 @@ var GeoGuessrEventFramework;
                         location: { lat: r.lat, lng: r.lng },
                         player_guess: { lat: g.lat, lng: g.lng },
                         score: {
-                            amount: parseFloat(g.roundScore.amount),
-                            unit: g.roundScore.unit,
-                            percentage: g.roundScore.percentage,
+                            amount: parseFloat((_a = g === null || g === void 0 ? void 0 : g.roundScore) === null || _a === void 0 ? void 0 : _a.amount) || 0,
+                            unit: ((_b = g === null || g === void 0 ? void 0 : g.roundScore) === null || _b === void 0 ? void 0 : _b.unit) || 'points',
+                            percentage: ((_c = g === null || g === void 0 ? void 0 : g.roundScore) === null || _c === void 0 ? void 0 : _c.percentage) || 0,
                         },
                         distance: {
                             meters: {
-                                amount: parseFloat(g.distance.meters.amount),
-                                unit: g.distance.meters.unit,
+                                amount: parseFloat((_e = (_d = g === null || g === void 0 ? void 0 : g.distance) === null || _d === void 0 ? void 0 : _d.meters) === null || _e === void 0 ? void 0 : _e.amount) || 0,
+                                unit: ((_g = (_f = g === null || g === void 0 ? void 0 : g.distance) === null || _f === void 0 ? void 0 : _f.meters) === null || _g === void 0 ? void 0 : _g.unit) || 'km',
                             },
                             miles: {
-                                amount: parseFloat(g.distance.miles.amount),
-                                unit: g.distance.miles.unit,
+                                amount: parseFloat((_j = (_h = g === null || g === void 0 ? void 0 : g.distance) === null || _h === void 0 ? void 0 : _h.miles) === null || _j === void 0 ? void 0 : _j.amount) || 0,
+                                unit: ((_l = (_k = g === null || g === void 0 ? void 0 : g.distance) === null || _k === void 0 ? void 0 : _k.miles) === null || _l === void 0 ? void 0 : _l.unit) || 'miles',
                             },
                         }
                     };
                     this.state.total_score = {
-                        amount: parseFloat(gData.player.totalScore.amount),
-                        unit: gData.player.totalScore.unit,
-                        percentage: gData.player.totalScore.percentage,
+                        amount: parseFloat((_o = (_m = gData === null || gData === void 0 ? void 0 : gData.player) === null || _m === void 0 ? void 0 : _m.totalScore) === null || _o === void 0 ? void 0 : _o.amount) || 0,
+                        unit: ((_q = (_p = gData === null || gData === void 0 ? void 0 : gData.player) === null || _p === void 0 ? void 0 : _p.totalScore) === null || _q === void 0 ? void 0 : _q.unit) || 'points',
+                        percentage: ((_s = (_r = gData === null || gData === void 0 ? void 0 : gData.player) === null || _r === void 0 ? void 0 : _r.totalScore) === null || _s === void 0 ? void 0 : _s.percentage) || 0,
                     };
                     this.state.total_distance = {
                         meters: {
-                            amount: parseFloat(gData.player.totalDistance.meters.amount),
-                            unit: gData.player.totalDistance.meters.unit,
+                            amount: parseFloat((_v = (_u = (_t = gData === null || gData === void 0 ? void 0 : gData.player) === null || _t === void 0 ? void 0 : _t.totalDistance) === null || _u === void 0 ? void 0 : _u.meters) === null || _v === void 0 ? void 0 : _v.amount) || 0,
+                            unit: ((_y = (_x = (_w = gData === null || gData === void 0 ? void 0 : gData.player) === null || _w === void 0 ? void 0 : _w.totalDistance) === null || _x === void 0 ? void 0 : _x.meters) === null || _y === void 0 ? void 0 : _y.unit) || 'km',
                         },
                         miles: {
-                            amount: parseFloat(gData.player.totalDistance.miles.amount),
-                            unit: gData.player.totalDistance.miles.unit,
+                            amount: parseFloat((_1 = (_0 = (_z = gData === null || gData === void 0 ? void 0 : gData.player) === null || _z === void 0 ? void 0 : _z.totalDistance) === null || _0 === void 0 ? void 0 : _0.miles) === null || _1 === void 0 ? void 0 : _1.amount) || 0,
+                            unit: ((_4 = (_3 = (_2 = gData === null || gData === void 0 ? void 0 : gData.player) === null || _2 === void 0 ? void 0 : _2.totalDistance) === null || _3 === void 0 ? void 0 : _3.miles) === null || _4 === void 0 ? void 0 : _4.unit) || 'miles',
                         },
                     };
                     this.state.map = {
@@ -174,8 +173,6 @@ var GeoGuessrEventFramework;
                     };
                 }
                 this.saveState();
-                console.log('round_end');
-                console.log(this.state);
                 this.events.dispatchEvent(new CustomEvent('round_end', { detail: this.state }));
                 if (this.state.current_round === 5) {
                     this.events.dispatchEvent(new CustomEvent('game_end', { detail: this.state }));

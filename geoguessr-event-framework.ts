@@ -66,7 +66,7 @@ var GeoGuessrEventFramework;
 	})();
 
 	function getGAPIData(state: GEF_State): any {
-		if(gApiData && gApiData.token === state.current_game_id && gApiData.round === state.current_round) {
+		if(gApiData && gApiData.round === state.current_round) {
 			return gApiData;
 		}
 
@@ -176,9 +176,6 @@ var GeoGuessrEventFramework;
 			}
 
 			this.saveState();
-
-			console.log('round_start')
-			console.log(this.state)
 	
 			if(this.state.current_round === 1) {
 				this.events.dispatchEvent(new CustomEvent('game_start', {detail: this.state}));
@@ -200,36 +197,36 @@ var GeoGuessrEventFramework;
 					location: {lat: r.lat, lng: r.lng},
 					player_guess: {lat: g.lat, lng: g.lng},
 					score: {
-						amount: parseFloat(g.roundScore.amount),
-						unit: g.roundScore.unit,
-						percentage: g.roundScore.percentage,
+						amount: parseFloat(g?.roundScore?.amount) || 0,
+						unit: g?.roundScore?.unit || 'points',
+						percentage: g?.roundScore?.percentage || 0,
 					},
 					distance: {
 						meters: {
-							amount: parseFloat(g.distance.meters.amount),
-							unit: g.distance.meters.unit,
+							amount: parseFloat(g?.distance?.meters?.amount) || 0,
+							unit: g?.distance?.meters?.unit || 'km',
 						},
 						miles: {
-							amount: parseFloat(g.distance.miles.amount),
-							unit: g.distance.miles.unit,
+							amount: parseFloat(g?.distance?.miles?.amount) || 0,
+							unit: g?.distance?.miles?.unit || 'miles',
 						},
 					}
 				}
 
 				this.state.total_score = {
-					amount: parseFloat(gData.player.totalScore.amount),
-					unit: gData.player.totalScore.unit,
-					percentage: gData.player.totalScore.percentage,
+					amount: parseFloat(gData?.player?.totalScore?.amount) || 0,
+					unit: gData?.player?.totalScore?.unit || 'points',
+					percentage: gData?.player?.totalScore?.percentage || 0,
 				}
 
 				this.state.total_distance = {
 					meters: {
-						amount: parseFloat(gData.player.totalDistance.meters.amount),
-						unit: gData.player.totalDistance.meters.unit,
+						amount: parseFloat(gData?.player?.totalDistance?.meters?.amount) || 0,
+						unit: gData?.player?.totalDistance?.meters?.unit || 'km',
 					},
 					miles: {
-						amount: parseFloat(gData.player.totalDistance.miles.amount),
-						unit: gData.player.totalDistance.miles.unit,
+						amount: parseFloat(gData?.player?.totalDistance?.miles?.amount) || 0,
+						unit: gData?.player?.totalDistance?.miles?.unit || 'miles',
 					},
 				}
 
@@ -240,9 +237,6 @@ var GeoGuessrEventFramework;
 			}
 	
 			this.saveState();
-
-			console.log('round_end')
-			console.log(this.state)
 	
 			this.events.dispatchEvent(new CustomEvent('round_end', {detail: this.state}));
 	
