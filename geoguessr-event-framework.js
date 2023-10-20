@@ -180,7 +180,7 @@ var GeoGuessrEventFramework;
             });
         }
         checkState() {
-            const gameLayout = document.querySelector('.game-layout');
+            const gameLayout = document.querySelector('div[class^="in-game_root__"]');
             const resultLayout = document.querySelector('div[class^="round-result_wrapper__"]');
             const finalScoreLayout = document.querySelector('div[class^="result-layout_root__"] div[class^="result-overlay_overlayContent__"]');
             if (gameLayout) {

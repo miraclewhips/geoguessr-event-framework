@@ -125,7 +125,7 @@ class GeoGuessrStreakFramework {
 		let panel = this.getRoundPanel();
 	
 		if(!panel) {
-			let gameScore = document.querySelector('.game-layout__status div[class^="status_section"][data-qa="score"]');
+			let gameScore = document.querySelector('div[class^="game_status__"] div[class^="status_section"][data-qa="score"]');
 	
 			if(gameScore) {
 				let panel = document.createElement('div');
