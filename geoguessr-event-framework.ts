@@ -211,6 +211,10 @@ var GeoGuessrEventFramework;
 				const r = gData.rounds[this.state.current_round-1];
 				const g = gData.player.guesses[this.state.current_round-1];
 
+				if(!r || !g) {
+					return;
+				}
+				
 				this.state.rounds[this.state.current_round - 1] = {
 					location: {
 						lat: r.lat,
