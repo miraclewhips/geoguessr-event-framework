@@ -133,14 +133,16 @@ class GeoGuessrStreakFramework {
         score.style.color = '#fff';
         score.style.padding = '10px';
         score.style.paddingBottom = '0';
-        score.style.position = 'absolute';
-        score.style.bottom = '100%';
-        score.style.width = '100%';
         score.style.background = 'var(--ds-color-purple-100)';
         return score;
     }
     updateSummaryPanel() {
         const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
+        const scoreLayoutBottom = scoreLayout.querySelector('div[class^="result-layout_bottomNew__"]');
+        if (scoreLayoutBottom) {
+            scoreLayoutBottom.style.flex = '0';
+            scoreLayoutBottom.style.maxHeight = 'none';
+        }
         let panel = this.getSummaryPanel();
         if (scoreLayout && !panel) {
             panel = this.createStreakElement();

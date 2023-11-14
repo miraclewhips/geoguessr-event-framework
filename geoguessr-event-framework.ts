@@ -1,8 +1,17 @@
-type LatLng = {lat: number|null, lng: number|null};
+declare var unsafeWindow: Window;
+
+type GeoRoundLocation = {
+	lat: number|null,
+	lng: number|null,
+	heading: number|null,
+	pitch: number|null,
+	zoom: number|null,
+	panoId: string|null,
+};
 
 type GEF_Round = {
-	location: LatLng,
-	player_guess: LatLng,
+	location: GeoRoundLocation,
+	player_guess: GeoRoundLocation,
 	distance: {
 		meters: {
 			amount: number,
@@ -52,16 +61,17 @@ var GeoGuessrEventFramework;
 
 (function() {
 	let gApiData;
-	const default_fetch = window.fetch;
-	window.fetch = (function () {
+	const THE_WINDOW = unsafeWindow || window;
+	const default_fetch = THE_WINDOW.fetch;
+	THE_WINDOW.fetch = (function () {
 			return async function (...args) {
 					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(args[0].toString())) {
-						let result = await default_fetch.apply(window, args);
+						let result = await default_fetch.apply(THE_WINDOW, args);
 						gApiData = await result.clone().json();
 						return result;
 					}
 
-					return default_fetch.apply(window, args);
+					return default_fetch.apply(THE_WINDOW, args);
 			};
 	})();
 
@@ -71,6 +81,14 @@ var GeoGuessrEventFramework;
 		}
 
 		return null;
+	}
+
+	function hex2a(hexx) {
+		var hex = hexx.toString();//force conversion
+		var str = '';
+		for (var i = 0; i < hex.length; i += 2)
+				str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+		return str;
 	}
 	
 	class GEF {
@@ -194,8 +212,22 @@ var GeoGuessrEventFramework;
 				const g = gData.player.guesses[this.state.current_round-1];
 
 				this.state.rounds[this.state.current_round - 1] = {
-					location: {lat: r.lat, lng: r.lng},
-					player_guess: {lat: g.lat, lng: g.lng},
+					location: {
+						lat: r.lat,
+						lng: r.lng,
+						heading: r.heading,
+						pitch: r.pitch,
+						zoom: r.zoom,
+						panoId: r.panoId ? hex2a(r.panoId) : null,
+					},
+					player_guess: {
+						lat: g.lat,
+						lng: g.lng,
+						heading: g.heading,
+						pitch: g.pitch,
+						zoom: g.zoom,
+						panoId: g.panoId ? hex2a(g.panoId) : null,
+					},
 					score: {
 						amount: parseFloat(g?.roundScore?.amount) || 0,
 						unit: g?.roundScore?.unit || 'points',
