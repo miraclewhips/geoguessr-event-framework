@@ -138,6 +138,8 @@ class GeoGuessrStreakFramework {
     }
     updateSummaryPanel() {
         const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
+        if (!scoreLayout)
+            return;
         const scoreLayoutBottom = scoreLayout.querySelector('div[class^="result-layout_bottomNew__"]');
         if (scoreLayoutBottom) {
             scoreLayoutBottom.style.flex = '0';

@@ -190,6 +190,7 @@ class GeoGuessrStreakFramework {
 	
 	private updateSummaryPanel(): void {
 		const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
+		if(!scoreLayout) return;
 
 		const scoreLayoutBottom: HTMLDivElement = scoreLayout.querySelector('div[class^="result-layout_bottomNew__"]');
 		if(scoreLayoutBottom) {
