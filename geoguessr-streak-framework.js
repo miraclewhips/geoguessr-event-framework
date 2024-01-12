@@ -45,7 +45,7 @@ class GeoGuessrStreakFramework {
         this.events.init().then(GEF => {
             console.log('GeoGuessr Streak Framework initialised.');
             GEF.events.addEventListener('round_start', () => {
-                this.updateRoundPanel();
+                this.updateStreakPanels();
             });
             const event_name = this.options.streak_type === 'game' ? 'game_end' : 'round_end';
             GEF.events.addEventListener(event_name, (event) => {
@@ -236,6 +236,7 @@ class GeoGuessrStreakFramework {
                 this.state.location_name = matchResult.actual_location_name;
                 doesMatch = matchResult.match;
             }
+            this.updateStreakPanels();
             if (doesMatch) {
                 this.incrementStreakValue(1);
             }
