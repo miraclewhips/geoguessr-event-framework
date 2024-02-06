@@ -2,17 +2,17 @@ declare var unsafeWindow: Window;
 var THE_WINDOW = unsafeWindow || window;
 
 type GeoRoundLocation = {
-	lat: number|null,
-	lng: number|null,
-	heading: number|null,
-	pitch: number|null,
-	zoom: number|null,
-	panoId: string|null,
+	lat: number|undefined,
+	lng: number|undefined,
+	heading: number|undefined,
+	pitch: number|undefined,
+	zoom: number|undefined,
+	panoId: string|undefined,
 };
 
 type GeoPlayerGuess = {
-	lat: number|null,
-	lng: number|null,
+	lat: number|undefined,
+	lng: number|undefined,
 }
 
 type GEF_Round = {
@@ -228,7 +228,7 @@ type GEF_State = {
 						heading: r.heading,
 						pitch: r.pitch,
 						zoom: r.zoom,
-						panoId: r.panoId ? hex2a(r.panoId) : null,
+						panoId: r.panoId ? hex2a(r.panoId) : undefined,
 					},
 					player_guess: {
 						lat: g.lat,

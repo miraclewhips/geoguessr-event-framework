@@ -49,12 +49,56 @@ The current state of the game is included in the `detail` field of the event.
   current_round: number,
   round_in_progress: boolean,
   game_in_progress: boolean,
-  total_score: number,
+  total_distance: {
+		meters: {
+			amount: number,
+			unit: string,
+		},
+		miles: {
+			amount: number,
+			unit: string,
+		}
+	},
+	total_score: {
+		amount: number,
+		unit: string,
+		percentage: number
+	},
+	total_time: number,
   rounds: [{
-    score: number,
-    location: {lat: number, lng: number},
-    player_guess: {lat: number, lng: number},
+    location: {
+    	lat: number|undefined,
+    	lng: number|undefined,
+    	heading: number|undefined,
+    	pitch: number|undefined,
+    	zoom: number|undefined,
+    	panoId: string|undefined,
+    },
+  	player_guess: {
+    	lat: number|undefined,
+    	lng: number|undefined,
+    },
+  	distance: {
+  		meters: {
+  			amount: number,
+  			unit: string,
+  		},
+  		miles: {
+  			amount: number,
+  			unit: string,
+  		}
+  	},
+  	score: {
+  		amount: number,
+  		unit: string,
+  		percentage: number
+  	},
+  	time: number,
   }],
+	map: {
+		id: string,
+		name: string,
+	},
 }
 ```
 
