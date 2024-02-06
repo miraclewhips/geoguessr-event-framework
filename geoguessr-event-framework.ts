@@ -1,4 +1,5 @@
 declare var unsafeWindow: Window;
+var THE_WINDOW = unsafeWindow || window;
 
 type GeoRoundLocation = {
 	lat: number|null,
@@ -57,11 +58,8 @@ type GEF_State = {
 	},
 }
 
-var GeoGuessrEventFramework;
-
 (function() {
 	let gApiData;
-	const THE_WINDOW = unsafeWindow || window;
 	const default_fetch = THE_WINDOW.fetch;
 	THE_WINDOW.fetch = (function () {
 			return async function (...args) {
@@ -302,6 +300,8 @@ var GeoGuessrEventFramework;
 		}
 	}
 	
-	GeoGuessrEventFramework = new GEF();
-	console.log('GeoGuessr Event Framework initialised: https://github.com/miraclewhips/geoguessr-event-framework');
+	if(!THE_WINDOW['GeoGuessrEventFramework']) {
+		THE_WINDOW['GeoGuessrEventFramework'] = new GEF();
+		console.log('GeoGuessr Event Framework initialised: https://github.com/miraclewhips/geoguessr-event-framework');
+	}
 })();

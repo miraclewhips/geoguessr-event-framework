@@ -7,10 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var GeoGuessrEventFramework;
+var THE_WINDOW = unsafeWindow || window;
 (function () {
     let gApiData;
-    const THE_WINDOW = unsafeWindow || window;
     const default_fetch = THE_WINDOW.fetch;
     THE_WINDOW.fetch = (function () {
         return function (...args) {
@@ -224,6 +223,8 @@ var GeoGuessrEventFramework;
             }
         }
     }
-    GeoGuessrEventFramework = new GEF();
-    console.log('GeoGuessr Event Framework initialised: https://github.com/miraclewhips/geoguessr-event-framework');
+    if (!THE_WINDOW['GeoGuessrEventFramework']) {
+        THE_WINDOW['GeoGuessrEventFramework'] = new GEF();
+        console.log('GeoGuessr Event Framework initialised: https://github.com/miraclewhips/geoguessr-event-framework');
+    }
 })();

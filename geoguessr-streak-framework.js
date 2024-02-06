@@ -38,10 +38,11 @@ class GeoGuessrStreakFramework {
         this.loadState();
         this.setupKeyboardShortcuts();
         window.addEventListener('load', this.updateStreakPanels.bind(this));
-        if (!GeoGuessrEventFramework) {
+        const THE_WINDOW = unsafeWindow || window;
+        if (!THE_WINDOW['GeoGuessrEventFramework']) {
             throw new Error('GeoGuessr Streak Framework requires GeoGuessr Event Framework (https://github.com/miraclewhips/geoguessr-event-framework). Please include this before you include GeoGuessr Streak Framework.');
         }
-        this.events = GeoGuessrEventFramework;
+        this.events = THE_WINDOW['GeoGuessrEventFramework'];
         this.events.init().then(GEF => {
             console.log('GeoGuessr Streak Framework initialised.');
             GEF.events.addEventListener('round_start', () => {
@@ -138,13 +139,13 @@ class GeoGuessrStreakFramework {
     }
     updateSummaryPanel() {
         const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
-        if (!scoreLayout)
-            return;
         const scoreLayoutBottom = document.querySelector('div[class^="result-layout_root"] div[class^="result-layout_bottomNew__"]');
         if (scoreLayoutBottom) {
             scoreLayoutBottom.style.flex = '0';
             scoreLayoutBottom.style.maxHeight = 'none';
         }
+        if (!scoreLayout && !scoreLayoutBottom)
+            return;
         let panel = this.getSummaryPanel();
         if (scoreLayout && !panel) {
             panel = this.createStreakElement();
