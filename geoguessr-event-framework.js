@@ -68,6 +68,7 @@ var THE_WINDOW = unsafeWindow || window;
                     meters: { amount: 0, unit: 'km' },
                     miles: { amount: 0, unit: 'miles' }
                 },
+                total_time: 0,
                 rounds: [],
                 map: { id: '', name: '' },
             };
@@ -133,7 +134,7 @@ var THE_WINDOW = unsafeWindow || window;
             });
         }
         stopRound() {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
             return __awaiter(this, void 0, void 0, function* () {
                 this.state.round_in_progress = false;
                 let gData = getGAPIData(this.state);
@@ -155,10 +156,6 @@ var THE_WINDOW = unsafeWindow || window;
                         player_guess: {
                             lat: g.lat,
                             lng: g.lng,
-                            heading: g.heading,
-                            pitch: g.pitch,
-                            zoom: g.zoom,
-                            panoId: g.panoId ? hex2a(g.panoId) : null,
                         },
                         score: {
                             amount: parseFloat((_a = g === null || g === void 0 ? void 0 : g.roundScore) === null || _a === void 0 ? void 0 : _a.amount) || 0,
@@ -174,7 +171,8 @@ var THE_WINDOW = unsafeWindow || window;
                                 amount: parseFloat((_j = (_h = g === null || g === void 0 ? void 0 : g.distance) === null || _h === void 0 ? void 0 : _h.miles) === null || _j === void 0 ? void 0 : _j.amount) || 0,
                                 unit: ((_l = (_k = g === null || g === void 0 ? void 0 : g.distance) === null || _k === void 0 ? void 0 : _k.miles) === null || _l === void 0 ? void 0 : _l.unit) || 'miles',
                             },
-                        }
+                        },
+                        time: g === null || g === void 0 ? void 0 : g.time
                     };
                     this.state.total_score = {
                         amount: parseFloat((_o = (_m = gData === null || gData === void 0 ? void 0 : gData.player) === null || _m === void 0 ? void 0 : _m.totalScore) === null || _o === void 0 ? void 0 : _o.amount) || 0,
@@ -191,6 +189,7 @@ var THE_WINDOW = unsafeWindow || window;
                             unit: ((_4 = (_3 = (_2 = gData === null || gData === void 0 ? void 0 : gData.player) === null || _2 === void 0 ? void 0 : _2.totalDistance) === null || _3 === void 0 ? void 0 : _3.miles) === null || _4 === void 0 ? void 0 : _4.unit) || 'miles',
                         },
                     };
+                    this.state.total_time = (_5 = gData === null || gData === void 0 ? void 0 : gData.player) === null || _5 === void 0 ? void 0 : _5.totalTime;
                     this.state.map = {
                         id: gData.map,
                         name: gData.mapName

@@ -10,9 +10,14 @@ type GeoRoundLocation = {
 	panoId: string|null,
 };
 
+type GeoPlayerGuess = {
+	lat: number|null,
+	lng: number|null,
+}
+
 type GEF_Round = {
 	location: GeoRoundLocation,
-	player_guess: GeoRoundLocation,
+	player_guess: GeoPlayerGuess,
 	distance: {
 		meters: {
 			amount: number,
@@ -27,7 +32,8 @@ type GEF_Round = {
 		amount: number,
 		unit: string,
 		percentage: number
-	}
+	},
+	time: number,
 };
 	
 type GEF_State = {
@@ -51,6 +57,7 @@ type GEF_State = {
 		unit: string,
 		percentage: number
 	},
+	total_time: number,
 	rounds: Array<GEF_Round>,
 	map: {
 		id: string,
@@ -126,6 +133,7 @@ type GEF_State = {
 					meters: {amount: 0, unit: 'km'},
 					miles: {amount: 0, unit: 'miles'}
 				},
+				total_time: 0,
 				rounds: [],
 				map: {id: '', name: ''},
 			}
@@ -225,10 +233,6 @@ type GEF_State = {
 					player_guess: {
 						lat: g.lat,
 						lng: g.lng,
-						heading: g.heading,
-						pitch: g.pitch,
-						zoom: g.zoom,
-						panoId: g.panoId ? hex2a(g.panoId) : null,
 					},
 					score: {
 						amount: parseFloat(g?.roundScore?.amount) || 0,
@@ -244,7 +248,8 @@ type GEF_State = {
 							amount: parseFloat(g?.distance?.miles?.amount) || 0,
 							unit: g?.distance?.miles?.unit || 'miles',
 						},
-					}
+					},
+					time: g?.time
 				}
 
 				this.state.total_score = {
@@ -263,6 +268,8 @@ type GEF_State = {
 						unit: gData?.player?.totalDistance?.miles?.unit || 'miles',
 					},
 				}
+
+				this.state.total_time = gData?.player?.totalTime;
 
 				this.state.map = {
 					id: gData.map,
