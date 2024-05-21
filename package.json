@@ -4,9 +4,9 @@
   "description": "",
   "main": "geoguessr-event-framework.js",
   "scripts": {
-		"watch": "npx tsc -t ES6 --watch",
-    "build": "npx tsc -t ES6",
-		"postbuild": "node esbuild.mjs"
+	"watch": "npx tsc -t ES6 --watch",
+	"build": "npx tsc -t ES6",
+	"postbuild": "node esbuild.mjs"
   },
   "keywords": [],
   "author": "miraclewhips",

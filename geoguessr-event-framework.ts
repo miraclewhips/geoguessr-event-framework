@@ -1,5 +1,5 @@
 declare var unsafeWindow: Window;
-var THE_WINDOW = unsafeWindow || window;
+const THE_WINDOW: any = unsafeWindow || window;
 
 type GeoRoundLocation = {
 	lat: number|undefined,
@@ -66,36 +66,6 @@ type GEF_State = {
 }
 
 (function() {
-	let gApiData;
-	const default_fetch = THE_WINDOW.fetch;
-	THE_WINDOW.fetch = (function () {
-			return async function (...args) {
-					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(args[0].toString())) {
-						let result = await default_fetch.apply(THE_WINDOW, args);
-						gApiData = await result.clone().json();
-						return result;
-					}
-
-					return default_fetch.apply(THE_WINDOW, args);
-			};
-	})();
-
-	function getGAPIData(state: GEF_State): any {
-		if(gApiData && gApiData.round === state.current_round) {
-			return gApiData;
-		}
-
-		return null;
-	}
-
-	function hex2a(hexx) {
-		var hex = hexx.toString();//force conversion
-		var str = '';
-		for (var i = 0; i < hex.length; i += 2)
-				str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-		return str;
-	}
-	
 	class GEF {
 		public events = new EventTarget();
 		public loadedPromise: Promise<this>;
@@ -103,14 +73,35 @@ type GEF_State = {
 		private state: GEF_State = this.defaultState();
 	
 		constructor() {
+			const default_fetch = THE_WINDOW.fetch;
+			THE_WINDOW.fetch = (function (thisClass) {
+				return async function (...args) {
+					const url = args[0].toString();
+					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url)) {
+						const result = await default_fetch.apply(THE_WINDOW, args);
+						const data = await result.clone().json();
+						if(!data.round) return data;
+
+						thisClass.parseData(data);
+
+						return result;
+					}
+
+					return default_fetch.apply(THE_WINDOW, args);
+				};
+			})(this);
+			
+			if(location.pathname.startsWith("/challenge/")) {
+				THE_WINDOW.addEventListener('load', () => {
+					const data = THE_WINDOW?.__NEXT_DATA__?.props?.pageProps?.gameSnapshot;
+					if(!data || !data.round) return;
+
+					this.parseData(data);
+				})
+			}
+
 			this.init();
 			this.loadState();
-		
-			let el = document.querySelector('#__next');
-			if(!el) return;
-			
-			const observer = new MutationObserver(this.checkState.bind(this));
-			observer.observe(el, { subtree: true, childList: true });
 		}
 
 		public async init(): Promise<this> {
@@ -118,7 +109,7 @@ type GEF_State = {
 				this.loadedPromise = Promise.resolve(this);
 			}
 
-			return this.loadedPromise;
+			return await this.loadedPromise;
 		}
 	
 		private defaultState(): GEF_State {
@@ -136,6 +127,16 @@ type GEF_State = {
 				total_time: 0,
 				rounds: [],
 				map: {id: '', name: ''},
+			}
+		}
+
+		private parseData(data: any) {
+			const finished = data.player.guesses.length == data.round;
+
+			if(finished) {
+				this.stopRound(data);
+			}else{
+				this.startRound(data);
 			}
 		}
 	
@@ -157,13 +158,14 @@ type GEF_State = {
 		private saveState(): void {
 			window.localStorage.setItem('GeoGuessrEventFramework_STATE', JSON.stringify(this.state));
 		}
-		
-		private getCurrentRound(): number {
-			const roundNode = document.querySelector('div[class^="status_inner__"]>div[data-qa="round-number"]');
-			const text = roundNode?.children[1].textContent;
-			if(!text) return 0;
-	
-			return parseInt(text.split(/\//gi)[0].trim());
+
+		private hex2a(hexx: string) {
+			const hex = hexx.toString();//force conversion
+			let str = '';
+			for (let i = 0; i < hex.length; i += 2) {
+				str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+			}
+			return str;
 		}
 	
 		private getGameMode(): string|undefined {
@@ -172,30 +174,19 @@ type GEF_State = {
 			return undefined;
 		}
 	
-		private getGameId(): string {
-			return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);
-		}
-	
-		private async startRound(): Promise<void> {
+		private startRound(data: any): void {
 			if(!this.getGameMode()) return;
-
-			// if game ID has changed just reset the state
-			if(this.state.current_game_id !== this.getGameId()) {
-				this.state = this.defaultState();
-			}
 	
-			this.state.current_round = this.getCurrentRound();
+			this.state.current_round = data.round;
 			this.state.round_in_progress = true;
 			this.state.game_in_progress = true;
-			this.state.current_game_id = this.getGameId();
-			this.state.is_challenge_link = this.getGameMode() == 'challenge';
+			this.state.current_game_id = data.token;
+			this.state.is_challenge_link = data.type == 'challenge';
 
-			let gData = getGAPIData(this.state);
-
-			if(gData) {
+			if(data) {
 				this.state.map = {
-					id: gData.map,
-					name: gData.mapName
+					id: data.map,
+					name: data.mapName
 				}
 			}
 
@@ -208,14 +199,12 @@ type GEF_State = {
 			this.events.dispatchEvent(new CustomEvent('round_start', {detail: this.state}));
 		}
 	
-		private async stopRound(): Promise<void> {
+		private stopRound(data: any): void {
 			this.state.round_in_progress = false;
 
-			let gData = getGAPIData(this.state);
-
-			if(gData) {
-				const r = gData.rounds[this.state.current_round-1];
-				const g = gData.player.guesses[this.state.current_round-1];
+			if(data) {
+				const r = data.rounds[this.state.current_round-1];
+				const g = data.player.guesses[this.state.current_round-1];
 
 				if(!r || !g) {
 					return;
@@ -228,7 +217,7 @@ type GEF_State = {
 						heading: r.heading,
 						pitch: r.pitch,
 						zoom: r.zoom,
-						panoId: r.panoId ? hex2a(r.panoId) : undefined,
+						panoId: r.panoId ? this.hex2a(r.panoId) : undefined,
 					},
 					player_guess: {
 						lat: g.lat,
@@ -253,27 +242,27 @@ type GEF_State = {
 				}
 
 				this.state.total_score = {
-					amount: parseFloat(gData?.player?.totalScore?.amount) || 0,
-					unit: gData?.player?.totalScore?.unit || 'points',
-					percentage: gData?.player?.totalScore?.percentage || 0,
+					amount: parseFloat(data?.player?.totalScore?.amount) || 0,
+					unit: data?.player?.totalScore?.unit || 'points',
+					percentage: data?.player?.totalScore?.percentage || 0,
 				}
 
 				this.state.total_distance = {
 					meters: {
-						amount: parseFloat(gData?.player?.totalDistance?.meters?.amount) || 0,
-						unit: gData?.player?.totalDistance?.meters?.unit || 'km',
+						amount: parseFloat(data?.player?.totalDistance?.meters?.amount) || 0,
+						unit: data?.player?.totalDistance?.meters?.unit || 'km',
 					},
 					miles: {
-						amount: parseFloat(gData?.player?.totalDistance?.miles?.amount) || 0,
-						unit: gData?.player?.totalDistance?.miles?.unit || 'miles',
+						amount: parseFloat(data?.player?.totalDistance?.miles?.amount) || 0,
+						unit: data?.player?.totalDistance?.miles?.unit || 'miles',
 					},
 				}
 
-				this.state.total_time = gData?.player?.totalTime;
+				this.state.total_time = data?.player?.totalTime;
 
 				this.state.map = {
-					id: gData.map,
-					name: gData.mapName
+					id: data.map,
+					name: data.mapName
 				}
 			}
 	
@@ -283,26 +272,6 @@ type GEF_State = {
 	
 			if(this.state.current_round === 5) {
 				this.events.dispatchEvent(new CustomEvent('game_end', {detail: this.state}));
-			}
-		}
-	
-		private checkState(): void {
-			const gameLayout = document.querySelector('div[class^="in-game_root__"]');
-			const resultLayout = document.querySelector('div[class^="round-result_wrapper__"]');
-			const finalScoreLayout = document.querySelector('div[class^="result-layout_root__"] div[class^="result-overlay_overlayContent__"]');
-		
-			if(gameLayout) {
-				if (this.state.current_round !== this.getCurrentRound() || this.state.current_game_id !== this.getGameId()) {
-					if(this.state.round_in_progress) {
-						this.stopRound();
-					}
-		
-					this.startRound();
-				}else if(resultLayout && this.state.round_in_progress) {
-					this.stopRound();
-				}else if(finalScoreLayout && this.state.game_in_progress) {
-					this.state.game_in_progress = false;
-				}
 			}
 		}
 	}

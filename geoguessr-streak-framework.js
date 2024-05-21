@@ -12,6 +12,8 @@ class GeoGuessrStreakFramework {
     constructor(options) {
         this.options = options;
         this.state = this.defaultState();
+        this.should_update_round_panel = false;
+        this.should_update_summary_panel = false;
         if (typeof this.options.storage_identifier === 'string') {
             this.options.storage_identifier = this.options.storage_identifier.replace(/[^\w\d-_]/g, '');
             if (this.options.storage_identifier.length == 0) {
@@ -45,11 +47,18 @@ class GeoGuessrStreakFramework {
         this.events = THE_WINDOW['GeoGuessrEventFramework'];
         this.events.init().then(GEF => {
             console.log('GeoGuessr Streak Framework initialised.');
+            let el = document.querySelector('#__next');
+            if (!el)
+                return;
+            const observer = new MutationObserver(this.checkState.bind(this));
+            observer.observe(el, { subtree: true, childList: true });
             GEF.events.addEventListener('round_start', () => {
+                this.should_update_round_panel = true;
                 this.updateStreakPanels();
             });
             const event_name = this.options.streak_type === 'game' ? 'game_end' : 'round_end';
             GEF.events.addEventListener(event_name, (event) => {
+                this.should_update_summary_panel = true;
                 this.stopRound(event.detail);
             });
         });
@@ -199,6 +208,7 @@ class GeoGuessrStreakFramework {
                 return;
             }
             this.state.last_guess_identifier = guessIdentifier;
+            this.saveState();
             if (round.location.lat == null ||
                 round.location.lng == null ||
                 round.player_guess.lat == null ||
@@ -286,5 +296,25 @@ class GeoGuessrStreakFramework {
             }
             ;
         });
+    }
+    checkState() {
+        const gameLayout = document.querySelector('div[class^="in-game_root__"]');
+        if (!gameLayout)
+            return;
+        const gameStatus = document.querySelector('div[class^="game_status__"]');
+        const resultLayout = document.querySelector('div[class^="round-result_wrapper__"]');
+        const finalScoreLayout = document.querySelector('div[class^="result-layout_root__"] div[class^="result-overlay_overlayContent__"]');
+        const update_round = this.should_update_round_panel || !this.getRoundPanel();
+        const update_summary = this.should_update_summary_panel || !this.getSummaryPanel();
+        if (gameLayout) {
+            if (gameStatus && update_round) {
+                this.should_update_round_panel = false;
+                this.updateRoundPanel();
+            }
+            else if ((resultLayout || finalScoreLayout) && update_summary) {
+                this.should_update_summary_panel = false;
+                this.updateSummaryPanel();
+            }
+        }
     }
 }
