@@ -81,11 +81,8 @@ const THE_WINDOW = unsafeWindow || window;
             if (!data)
                 return;
             let dataJson = JSON.parse(data);
-            if (!data)
+            if (!dataJson)
                 return;
-            dataJson.current_round = 0;
-            dataJson.round_in_progress = false;
-            dataJson.game_in_progress = true;
             Object.assign(this.state, this.defaultState(), dataJson);
             this.saveState();
         }
@@ -100,16 +97,7 @@ const THE_WINDOW = unsafeWindow || window;
             }
             return str;
         }
-        getGameMode() {
-            if (location.pathname.startsWith("/game/"))
-                return 'game';
-            if (location.pathname.startsWith("/challenge/"))
-                return 'challenge';
-            return undefined;
-        }
         startRound(data) {
-            if (!this.getGameMode())
-                return;
             this.state.current_round = data.round;
             this.state.round_in_progress = true;
             this.state.game_in_progress = true;
