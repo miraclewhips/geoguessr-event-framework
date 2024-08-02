@@ -12,6 +12,7 @@ class GeoGuessrStreakFramework {
     constructor(options) {
         this.options = options;
         this.state = this.defaultState();
+        this.current_round = 0;
         this.should_update_round_panel = false;
         this.should_update_summary_panel = false;
         if (typeof this.options.storage_identifier === 'string') {
@@ -52,7 +53,8 @@ class GeoGuessrStreakFramework {
                 return;
             const observer = new MutationObserver(this.checkState.bind(this));
             observer.observe(el, { subtree: true, childList: true });
-            GEF.events.addEventListener('round_start', () => {
+            GEF.events.addEventListener('round_start', (event) => {
+                this.current_round = event.detail.current_round;
                 this.should_update_round_panel = true;
                 this.updateStreakPanels();
             });
@@ -147,6 +149,8 @@ class GeoGuessrStreakFramework {
         return score;
     }
     updateSummaryPanel() {
+        if (this.options.streak_type === 'game' && this.current_round !== 5)
+            return;
         const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
         const scoreLayoutBottom = document.querySelector('div[class^="result-layout_root"] div[class^="result-layout_bottomNew__"]');
         if (scoreLayoutBottom) {
