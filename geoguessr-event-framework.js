@@ -18,11 +18,11 @@ const THE_WINDOW = unsafeWindow || window;
                 return function (...args) {
                     return __awaiter(this, void 0, void 0, function* () {
                         const url = args[0].toString();
-                        if (/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url)) {
+                        if (/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url) && url.indexOf('daily-challenge') === -1) {
                             const result = yield default_fetch.apply(THE_WINDOW, args);
                             const data = yield result.clone().json();
                             if (!data.round)
-                                return data;
+                                return result;
                             thisClass.parseData(data);
                             return result;
                         }

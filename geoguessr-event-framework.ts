@@ -77,10 +77,10 @@ type GEF_State = {
 			THE_WINDOW.fetch = (function (thisClass) {
 				return async function (...args) {
 					const url = args[0].toString();
-					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url)) {
+					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url) && url.indexOf('daily-challenge') === -1) {
 						const result = await default_fetch.apply(THE_WINDOW, args);
 						const data = await result.clone().json();
-						if(!data.round) return data;
+						if(!data.round) return result;
 
 						thisClass.parseData(data);
 
