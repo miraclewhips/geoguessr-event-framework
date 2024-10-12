@@ -230,7 +230,7 @@ class GeoGuessrStreakFramework {
                 const responseLocation = yield this.queryOSM(round.location);
                 this.state.checking_api = false;
                 if (this.options.custom_match_function) {
-                    const matchResult = this.options.custom_match_function(this.events.state, responseGuess, responseLocation);
+                    const matchResult = yield this.options.custom_match_function(this.events.state, responseGuess, responseLocation);
                     this.state.guess_name = matchResult.player_guess_name;
                     this.state.location_name = matchResult.actual_location_name;
                     doesMatch = matchResult.match;
@@ -246,7 +246,7 @@ class GeoGuessrStreakFramework {
                 }
             }
             else {
-                const matchResult = this.options.custom_match_function(this.events.state, round.player_guess, round.location);
+                const matchResult = yield this.options.custom_match_function(this.events.state, round.player_guess, round.location);
                 this.state.guess_name = matchResult.player_guess_name;
                 this.state.location_name = matchResult.actual_location_name;
                 doesMatch = matchResult.match;
