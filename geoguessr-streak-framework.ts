@@ -299,7 +299,7 @@ class GeoGuessrStreakFramework {
 			this.state.checking_api = false;
 		
 			if(this.options.custom_match_function) {
-				const matchResult = this.options.custom_match_function(this.events.state, responseGuess, responseLocation);
+				const matchResult = await this.options.custom_match_function(this.events.state, responseGuess, responseLocation);
 				this.state.guess_name = matchResult.player_guess_name;
 				this.state.location_name = matchResult.actual_location_name;
 				doesMatch = matchResult.match;
@@ -315,7 +315,7 @@ class GeoGuessrStreakFramework {
 				doesMatch = countryCodeMatches && (nameMatches || this.options.only_match_country_code);
 			}
 		}else{
-			const matchResult = this.options.custom_match_function(this.events.state, round.player_guess, round.location);
+			const matchResult = await this.options.custom_match_function(this.events.state, round.player_guess, round.location);
 			this.state.guess_name = matchResult.player_guess_name;
 			this.state.location_name = matchResult.actual_location_name;
 			doesMatch = matchResult.match;
