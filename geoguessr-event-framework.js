@@ -13,6 +13,33 @@ const THE_WINDOW = unsafeWindow || window;
         constructor() {
             this.events = new EventTarget();
             this.state = this.defaultState();
+            THE_WINDOW.addEventListener('load', () => {
+                var _a, _b, _c;
+                if (location.pathname.startsWith("/challenge/")) {
+                    const data = (_c = (_b = (_a = THE_WINDOW === null || THE_WINDOW === void 0 ? void 0 : THE_WINDOW.__NEXT_DATA__) === null || _a === void 0 ? void 0 : _a.props) === null || _b === void 0 ? void 0 : _b.pageProps) === null || _c === void 0 ? void 0 : _c.gameSnapshot;
+                    if (!data || !data.round)
+                        return;
+                    this.parseData(data);
+                }
+                this.checkFetchIsOverriden();
+            });
+            this.init();
+            this.loadState();
+        }
+        checkFetchIsOverriden() {
+            let el = document.querySelector('#__next');
+            if (!el)
+                return;
+            const observer = new MutationObserver(() => {
+                if (THE_WINDOW.fetch.isGEFFetch)
+                    return;
+                this.overrideFetch();
+            });
+            observer.observe(el, { subtree: true, childList: true });
+        }
+        overrideFetch() {
+            if (THE_WINDOW.fetch.isGEFFetch)
+                return;
             const default_fetch = THE_WINDOW.fetch;
             THE_WINDOW.fetch = (function (thisClass) {
                 return function (...args) {
@@ -30,23 +57,14 @@ const THE_WINDOW = unsafeWindow || window;
                     });
                 };
             })(this);
-            if (location.pathname.startsWith("/challenge/")) {
-                THE_WINDOW.addEventListener('load', () => {
-                    var _a, _b, _c;
-                    const data = (_c = (_b = (_a = THE_WINDOW === null || THE_WINDOW === void 0 ? void 0 : THE_WINDOW.__NEXT_DATA__) === null || _a === void 0 ? void 0 : _a.props) === null || _b === void 0 ? void 0 : _b.pageProps) === null || _c === void 0 ? void 0 : _c.gameSnapshot;
-                    if (!data || !data.round)
-                        return;
-                    this.parseData(data);
-                });
-            }
-            this.init();
-            this.loadState();
+            THE_WINDOW.fetch.isGEFFetch = true;
         }
         init() {
             return __awaiter(this, void 0, void 0, function* () {
                 if (!this.loadedPromise) {
                     this.loadedPromise = Promise.resolve(this);
                 }
+                this.overrideFetch();
                 return yield this.loadedPromise;
             });
         }

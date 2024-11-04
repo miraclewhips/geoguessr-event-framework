@@ -290,20 +290,22 @@ class GeoGuessrStreakFramework {
 		}
 	
 		let doesMatch = false;
+		this.state.checking_api = true;
 		
 		if(this.options.query_openstreetmap) {
-			this.state.checking_api = true;
 			this.updateStreakPanels();
 			const responseGuess = await this.queryOSM(round.player_guess);
 			const responseLocation = await this.queryOSM(round.location);
-			this.state.checking_api = false;
 		
 			if(this.options.custom_match_function) {
 				const matchResult = await this.options.custom_match_function(this.events.state, responseGuess, responseLocation);
+				this.state.checking_api = false;
+
 				this.state.guess_name = matchResult.player_guess_name;
 				this.state.location_name = matchResult.actual_location_name;
 				doesMatch = matchResult.match;
 			}else{
+				this.state.checking_api = false;
 				const guessCC = this.matchCountryCode(responseGuess?.address);
 				const locationCC = this.matchCountryCode(responseLocation?.address);
 	
@@ -316,6 +318,8 @@ class GeoGuessrStreakFramework {
 			}
 		}else{
 			const matchResult = await this.options.custom_match_function(this.events.state, round.player_guess, round.location);
+			this.state.checking_api = false;
+
 			this.state.guess_name = matchResult.player_guess_name;
 			this.state.location_name = matchResult.actual_location_name;
 			doesMatch = matchResult.match;

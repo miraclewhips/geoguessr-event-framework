@@ -73,6 +73,35 @@ type GEF_State = {
 		private state: GEF_State = this.defaultState();
 	
 		constructor() {
+			THE_WINDOW.addEventListener('load', () => {
+				if(location.pathname.startsWith("/challenge/")) {
+					const data = THE_WINDOW?.__NEXT_DATA__?.props?.pageProps?.gameSnapshot;
+					if(!data || !data.round) return;
+
+					this.parseData(data);
+				}
+
+				this.checkFetchIsOverriden();
+			});
+
+			this.init();
+			this.loadState();
+		}
+
+		private checkFetchIsOverriden(): void {
+			let el = document.querySelector('#__next');
+			if(!el) return;
+
+			const observer = new MutationObserver(() => {
+				if(THE_WINDOW.fetch.isGEFFetch) return;
+				this.overrideFetch();
+			});
+			observer.observe(el, { subtree: true, childList: true });
+		}
+
+		private overrideFetch(): void {
+			if(THE_WINDOW.fetch.isGEFFetch) return;
+
 			const default_fetch = THE_WINDOW.fetch;
 			THE_WINDOW.fetch = (function (thisClass) {
 				return async function (...args) {
@@ -91,23 +120,15 @@ type GEF_State = {
 				};
 			})(this);
 			
-			if(location.pathname.startsWith("/challenge/")) {
-				THE_WINDOW.addEventListener('load', () => {
-					const data = THE_WINDOW?.__NEXT_DATA__?.props?.pageProps?.gameSnapshot;
-					if(!data || !data.round) return;
-
-					this.parseData(data);
-				})
-			}
-
-			this.init();
-			this.loadState();
+			THE_WINDOW.fetch.isGEFFetch = true;
 		}
 
 		public async init(): Promise<this> {
 			if(!this.loadedPromise) {
 				this.loadedPromise = Promise.resolve(this);
 			}
+
+			this.overrideFetch();
 
 			return await this.loadedPromise;
 		}
