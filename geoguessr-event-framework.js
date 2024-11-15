@@ -13,35 +13,33 @@ const THE_WINDOW = unsafeWindow || window;
         constructor() {
             this.events = new EventTarget();
             this.state = this.defaultState();
+            this.loadState();
+            this.initFetchEvents();
+            this.overrideFetch();
+            this.init();
             THE_WINDOW.addEventListener('load', () => {
                 var _a, _b, _c;
                 if (location.pathname.startsWith("/challenge/")) {
                     const data = (_c = (_b = (_a = THE_WINDOW === null || THE_WINDOW === void 0 ? void 0 : THE_WINDOW.__NEXT_DATA__) === null || _a === void 0 ? void 0 : _a.props) === null || _b === void 0 ? void 0 : _b.pageProps) === null || _c === void 0 ? void 0 : _c.gameSnapshot;
                     if (!data || !data.round)
                         return;
-                    this.parseData(data);
+                    THE_WINDOW.GEFFetchEvents.dispatchEvent(new CustomEvent('received_data', { detail: data }));
                 }
-                this.checkFetchIsOverriden();
             });
-            this.init();
-            this.loadState();
+            THE_WINDOW.GEFFetchEvents.addEventListener('received_data', (event) => {
+                this.parseData(event.detail);
+            });
         }
-        checkFetchIsOverriden() {
-            let el = document.querySelector('#__next');
-            if (!el)
+        initFetchEvents() {
+            if (THE_WINDOW.GEFFetchEvents !== undefined)
                 return;
-            const observer = new MutationObserver(() => {
-                if (THE_WINDOW.fetch.isGEFFetch)
-                    return;
-                this.overrideFetch();
-            });
-            observer.observe(el, { subtree: true, childList: true });
+            THE_WINDOW.GEFFetchEvents = new EventTarget();
         }
         overrideFetch() {
             if (THE_WINDOW.fetch.isGEFFetch)
                 return;
             const default_fetch = THE_WINDOW.fetch;
-            THE_WINDOW.fetch = (function (thisClass) {
+            THE_WINDOW.fetch = (function () {
                 return function (...args) {
                     return __awaiter(this, void 0, void 0, function* () {
                         const url = args[0].toString();
@@ -50,13 +48,13 @@ const THE_WINDOW = unsafeWindow || window;
                             const data = yield result.clone().json();
                             if (!data.round)
                                 return result;
-                            thisClass.parseData(data);
+                            THE_WINDOW.GEFFetchEvents.dispatchEvent(new CustomEvent('received_data', { detail: data }));
                             return result;
                         }
                         return default_fetch.apply(THE_WINDOW, args);
                     });
                 };
-            })(this);
+            })();
             THE_WINDOW.fetch.isGEFFetch = true;
         }
         init() {
@@ -64,7 +62,6 @@ const THE_WINDOW = unsafeWindow || window;
                 if (!this.loadedPromise) {
                     this.loadedPromise = Promise.resolve(this);
                 }
-                this.overrideFetch();
                 return yield this.loadedPromise;
             });
         }

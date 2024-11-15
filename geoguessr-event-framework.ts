@@ -73,37 +73,35 @@ type GEF_State = {
 		private state: GEF_State = this.defaultState();
 	
 		constructor() {
+			this.loadState();
+			this.initFetchEvents();
+			this.overrideFetch();
+			this.init();
+
 			THE_WINDOW.addEventListener('load', () => {
 				if(location.pathname.startsWith("/challenge/")) {
 					const data = THE_WINDOW?.__NEXT_DATA__?.props?.pageProps?.gameSnapshot;
 					if(!data || !data.round) return;
 
-					this.parseData(data);
+					THE_WINDOW.GEFFetchEvents.dispatchEvent(new CustomEvent('received_data', {detail: data}));
 				}
-
-				this.checkFetchIsOverriden();
 			});
 
-			this.init();
-			this.loadState();
+			THE_WINDOW.GEFFetchEvents.addEventListener('received_data', (event) => {
+				this.parseData(event.detail);
+			});
 		}
 
-		private checkFetchIsOverriden(): void {
-			let el = document.querySelector('#__next');
-			if(!el) return;
-
-			const observer = new MutationObserver(() => {
-				if(THE_WINDOW.fetch.isGEFFetch) return;
-				this.overrideFetch();
-			});
-			observer.observe(el, { subtree: true, childList: true });
+		private initFetchEvents(): void {
+			if(THE_WINDOW.GEFFetchEvents !== undefined) return;
+			THE_WINDOW.GEFFetchEvents = new EventTarget();
 		}
 
 		private overrideFetch(): void {
 			if(THE_WINDOW.fetch.isGEFFetch) return;
 
 			const default_fetch = THE_WINDOW.fetch;
-			THE_WINDOW.fetch = (function (thisClass) {
+			THE_WINDOW.fetch = (function () {
 				return async function (...args) {
 					const url = args[0].toString();
 					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url) && url.indexOf('daily-challenge') === -1) {
@@ -111,14 +109,14 @@ type GEF_State = {
 						const data = await result.clone().json();
 						if(!data.round) return result;
 
-						thisClass.parseData(data);
+						THE_WINDOW.GEFFetchEvents.dispatchEvent(new CustomEvent('received_data', {detail: data}));
 
 						return result;
 					}
 
 					return default_fetch.apply(THE_WINDOW, args);
 				};
-			})(this);
+			})();
 			
 			THE_WINDOW.fetch.isGEFFetch = true;
 		}
@@ -127,8 +125,6 @@ type GEF_State = {
 			if(!this.loadedPromise) {
 				this.loadedPromise = Promise.resolve(this);
 			}
-
-			this.overrideFetch();
 
 			return await this.loadedPromise;
 		}
