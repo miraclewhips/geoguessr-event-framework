@@ -79,24 +79,32 @@ class GeoGuessrStreakFramework {
 		this.events.init().then(GEF => {
 			console.log('GeoGuessr Streak Framework initialised.');
 
-			let el = document.querySelector('#__next');
-			if(!el) return;
+			const addEvents = () => {
+				let el = document.querySelector('#__next');
+				if(!el) return;
+
+				const observer = new MutationObserver(this.checkState.bind(this));
+				observer.observe(el, { subtree: true, childList: true });
+
+				GEF.events.addEventListener('round_start', (event) => {
+					this.current_round = event.detail.current_round;
+					this.should_update_round_panel = true;
+					this.updateStreakPanels();
+				});
+
+				const event_name = this.options.streak_type === 'game' ? 'game_end' : 'round_end';
+
+				GEF.events.addEventListener(event_name, (event) => {
+					this.should_update_summary_panel = true;
+					this.stopRound(event.detail);
+				});
+			}
 			
-			const observer = new MutationObserver(this.checkState.bind(this));
-			observer.observe(el, { subtree: true, childList: true });
-
-			GEF.events.addEventListener('round_start', (event) => {
-				this.current_round = event.detail.current_round;
-				this.should_update_round_panel = true;
-				this.updateStreakPanels();
-			});
-
-			const event_name = this.options.streak_type === 'game' ? 'game_end' : 'round_end';
-
-			GEF.events.addEventListener(event_name, (event) => {
-				this.should_update_summary_panel = true;
-				this.stopRound(event.detail);
-			});
+			if(document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', addEvents);
+			}else{
+				addEvents();
+			}
 		});
 	}
 
