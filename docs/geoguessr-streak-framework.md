@@ -15,7 +15,7 @@ Recommended UserScript manager is Violentmonkey. The event framework scripts no 
 // ...
 // @match        *://*.geoguessr.com/*
 // @run-at       document-start
-// @grant        none
+// @grant        unsafeWindow
 // @require      https://miraclewhips.dev/geoguessr-event-framework/geoguessr-event-framework.min.js
 // @require      https://miraclewhips.dev/geoguessr-event-framework/geoguessr-streak-framework.min.js
 // ...
