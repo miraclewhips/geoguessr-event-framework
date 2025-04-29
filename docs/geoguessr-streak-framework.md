@@ -6,6 +6,8 @@ Framework to manage different types of streaks in GeoGuessr. Used in conjunction
 
 You can add it to your own Userscript using the `@require` parameter in your UserScript info. Make sure to include the `@match`, `@run-at`, and `@grant` parameters as well, as well as the `@require` tag with the Event Framework.
 
+Recommended UserScript manager is Violentmonkey. The event framework scripts no longer work in Tampermonkey after recent updates to the extension.
+
 ### Sample code
 
 ```javascript

@@ -6,6 +6,8 @@ Basic event framework for GeoGuessr extensions.
 
 You can add it to your own Userscript using the `@require` parameter in your UserScript info. Make sure to include the `@match`, `@run-at`, and `@grant` parameters as well.
 
+Recommended UserScript manager is Violentmonkey. The event framework scripts no longer work in Tampermonkey after recent updates to the extension.
+
 ### Sample code
 
 ```javascript
