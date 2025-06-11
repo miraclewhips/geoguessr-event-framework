@@ -41,8 +41,17 @@ const THE_WINDOW = unsafeWindow || window;
             const default_fetch = THE_WINDOW.fetch;
             THE_WINDOW.fetch = (function () {
                 return function (...args) {
+                    var _a;
                     return __awaiter(this, void 0, void 0, function* () {
                         const url = args[0].toString();
+                        if (url.match(/geoguessr\.com\/api\/v3\/games$/) && ((_a = args[1]) === null || _a === void 0 ? void 0 : _a.method) === "POST") {
+                            const result = yield default_fetch.apply(THE_WINDOW, args);
+                            const data = yield result.clone().json();
+                            if (!data.round)
+                                return result;
+                            THE_WINDOW.GEFFetchEvents.dispatchEvent(new CustomEvent('received_data', { detail: data }));
+                            return result;
+                        }
                         if (/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url) && url.indexOf('daily-challenge') === -1) {
                             const result = yield default_fetch.apply(THE_WINDOW, args);
                             const data = yield result.clone().json();
@@ -84,10 +93,11 @@ const THE_WINDOW = unsafeWindow || window;
         }
         parseData(data) {
             const finished = data.player.guesses.length == data.round;
+            const isNewRound = data.round !== this.state.current_round;
             if (finished) {
                 this.stopRound(data);
             }
-            else {
+            else if (isNewRound) {
                 this.startRound(data);
             }
         }
