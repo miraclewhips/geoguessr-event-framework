@@ -53,7 +53,7 @@ const GSF = new GeoGuessrStreakFramework({
   only_match_country_code: boolean,
   query_openstreetmap: boolean,
   address_matches?: string[],
-  custom_match_function?: Function,
+  custom_match_function?: async Function,
   keyboard_shortcuts: {reset: string, increment: string, decrement: string, restore: string},
 }
 ```
@@ -102,11 +102,11 @@ default: `true`
 default: `['country']`
 - List of properties to check for in the OpenStreetMap `address` object. Returns first match when iterating through the list (or `"Undefined"` if there are no matches). Since every country is different adding multiple fields to check, for example `['state', 'territory', 'province', 'county', 'municipality', 'ISO3166-2-lvl4']` for a state streak, will ensure that most/all countries will be supported in the streak.
 
-### `custom_match_function: Function`
+### `custom_match_function: async Function`
 default: `undefined`
 - Instead of using the `address_matches` property you can provide a custom function that you can write to do your own matching:
 ```javascript
-function custom_match_function(state, player_guess, actual_location) {
+async function custom_match_function(state, player_guess, actual_location) {
   return {
     player_guess_name: string|null, // name of the location that the player guessed
     actual_location_name: string|null, // name of the actual location
