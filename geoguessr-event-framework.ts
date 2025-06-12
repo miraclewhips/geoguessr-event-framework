@@ -104,6 +104,17 @@ type GEF_State = {
 			THE_WINDOW.fetch = (function () {
 				return async function (...args) {
 					const url = args[0].toString();
+
+					if(url.match(/geoguessr\.com\/api\/v3\/games$/) && args[1]?.method === "POST") {
+						const result = await default_fetch.apply(THE_WINDOW, args);
+						const data = await result.clone().json();
+						if(!data.round) return result;
+						
+						THE_WINDOW.GEFFetchEvents.dispatchEvent(new CustomEvent('received_data', {detail: data}));
+
+						return result;
+					}
+
 					if(/geoguessr.com\/api\/v3\/(games|challenges)\//.test(url) && url.indexOf('daily-challenge') === -1) {
 						const result = await default_fetch.apply(THE_WINDOW, args);
 						const data = await result.clone().json();
@@ -149,14 +160,15 @@ type GEF_State = {
 
 		private parseData(data: any) {
 			const finished = data.player.guesses.length == data.round;
+			const isNewRound = data.round !== this.state.current_round;
 
 			if(finished) {
 				this.stopRound(data);
-			}else{
+			}else if(isNewRound){
 				this.startRound(data);
 			}
 		}
-	
+
 		private loadState(): void {
 			let data = window.localStorage.getItem('GeoGuessrEventFramework_STATE');
 			if(!data) return;
@@ -197,7 +209,7 @@ type GEF_State = {
 			}
 
 			this.saveState();
-	
+
 			if(this.state.current_round === 1) {
 				this.events.dispatchEvent(new CustomEvent('game_start', {detail: this.state}));
 			}
