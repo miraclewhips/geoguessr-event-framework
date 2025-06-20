@@ -194,12 +194,6 @@ type GEF_State = {
 		}
 	
 		private startRound(data: any): void {
-			// UPDATE CURRENT URL SINCE GEOGUESSR IS SCUFFED AND KEEPS OLD URL EVEN WHEN STARTING NEW GAME - CAN REMOVE LATER IF THEY FIX IT
-			if(this.state.current_game_id !== data.token && /^\/game\/.+$/.test(window.location.pathname)) {
-				const newUrl = window.location.href.replace(/\/game\/.+$/, `/game/${data.token}`);
-				window.history.pushState(null, null, newUrl);
-			}
-
 			this.state.current_round = data.round;
 			this.state.round_in_progress = true;
 			this.state.game_in_progress = true;
