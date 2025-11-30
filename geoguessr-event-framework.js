@@ -88,6 +88,12 @@ const THE_WINDOW = unsafeWindow || window;
                 },
                 total_time: 0,
                 rounds: [],
+                settings: {
+                    time_limit: 0,
+                    forbid_moving: false,
+                    forbid_panning: false,
+                    forbid_zooming: false,
+                },
                 map: { id: '', name: '' },
             };
         }
@@ -122,6 +128,18 @@ const THE_WINDOW = unsafeWindow || window;
             }
             return str;
         }
+        updateGameSettings(data) {
+            this.state.settings = {
+                time_limit: data.timeLimit,
+                forbid_moving: data.forbidMoving,
+                forbid_panning: data.forbidPanning,
+                forbid_zooming: data.forbidZooming,
+            };
+            this.state.map = {
+                id: data.map,
+                name: data.mapName
+            };
+        }
         startRound(data) {
             this.state.current_round = data.round;
             this.state.round_in_progress = true;
@@ -130,10 +148,7 @@ const THE_WINDOW = unsafeWindow || window;
             this.state.is_challenge_link = data.type == 'challenge';
             this.state.rounds = this.state.rounds.slice(0, data.round - 1);
             if (data) {
-                this.state.map = {
-                    id: data.map,
-                    name: data.mapName
-                };
+                this.updateGameSettings(data);
             }
             this.saveState();
             if (this.state.current_round === 1) {
@@ -196,10 +211,7 @@ const THE_WINDOW = unsafeWindow || window;
                     },
                 };
                 this.state.total_time = (_5 = data === null || data === void 0 ? void 0 : data.player) === null || _5 === void 0 ? void 0 : _5.totalTime;
-                this.state.map = {
-                    id: data.map,
-                    name: data.mapName
-                };
+                this.updateGameSettings(data);
             }
             this.saveState();
             this.events.dispatchEvent(new CustomEvent('round_end', { detail: this.state }));

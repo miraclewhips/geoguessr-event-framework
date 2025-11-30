@@ -97,6 +97,12 @@ The current state of the game is included in the `detail` field of the event.
   	},
   	time: number,
   }],
+    settings: {
+        time_limit: number, // 0 means unlimited
+        forbid_moving: boolean,
+        forbid_panning: boolean,
+        forbid_zooming: boolean,
+    },
 	map: {
 		id: string,
 		name: string,

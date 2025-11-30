@@ -59,6 +59,12 @@ type GEF_State = {
 	},
 	total_time: number,
 	rounds: Array<GEF_Round>,
+	settings: {
+		time_limit: number,
+		forbid_moving: boolean,
+		forbid_panning: boolean,
+		forbid_zooming: boolean,
+	},
 	map: {
 		id: string,
 		name: string,
@@ -154,6 +160,12 @@ type GEF_State = {
 				},
 				total_time: 0,
 				rounds: [],
+				settings: {
+					time_limit: 0,
+					forbid_moving: false,
+					forbid_panning: false,
+					forbid_zooming: false,
+				},
 				map: {id: '', name: ''},
 			}
 		}
@@ -192,6 +204,19 @@ type GEF_State = {
 			}
 			return str;
 		}
+
+		private updateGameSettings(data: any): void {
+			this.state.settings = {
+				time_limit: data.timeLimit,
+				forbid_moving: data.forbidMoving,
+				forbid_panning: data.forbidPanning,
+				forbid_zooming: data.forbidZooming,
+			}
+			this.state.map = {
+				id: data.map,
+				name: data.mapName
+			}
+		}
 	
 		private startRound(data: any): void {
 			this.state.current_round = data.round;
@@ -202,10 +227,7 @@ type GEF_State = {
 			this.state.rounds = this.state.rounds.slice(0, data.round - 1);
 
 			if(data) {
-				this.state.map = {
-					id: data.map,
-					name: data.mapName
-				}
+				this.updateGameSettings(data)
 			}
 
 			this.saveState();
@@ -278,10 +300,7 @@ type GEF_State = {
 
 				this.state.total_time = data?.player?.totalTime;
 
-				this.state.map = {
-					id: data.map,
-					name: data.mapName
-				}
+				this.updateGameSettings(data)
 			}
 	
 			this.saveState();
