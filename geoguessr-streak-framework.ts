@@ -412,3 +412,5 @@ class GeoGuessrStreakFramework {
 		}
 	}
 }
+
+(unsafeWindow || window)['GeoGuessrStreakFramework'] = GeoGuessrStreakFramework;
