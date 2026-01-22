@@ -162,7 +162,7 @@ class GeoGuessrStreakFramework {
         const scoreLayout = document.querySelector('div[class^="result-layout_root"] div[class^="round-result_wrapper__"]');
         const scoreLayoutBottom = document.querySelector('div[class^="result-layout_root"] div[class^="result-layout_bottomNew__"]');
         if (scoreLayoutBottom) {
-            scoreLayoutBottom.style.flex = '0';
+            scoreLayoutBottom.style.flex = '0 0 auto';
             scoreLayoutBottom.style.maxHeight = 'none';
         }
         if (!scoreLayout && !scoreLayoutBottom)

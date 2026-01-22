@@ -218,7 +218,7 @@ class GeoGuessrStreakFramework {
 
 		const scoreLayoutBottom: HTMLDivElement = document.querySelector('div[class^="result-layout_root"] div[class^="result-layout_bottomNew__"]');
 		if(scoreLayoutBottom) {
-			scoreLayoutBottom.style.flex = '0';
+			scoreLayoutBottom.style.flex = '0 0 auto';
 			scoreLayoutBottom.style.maxHeight = 'none';
 		}
 		
