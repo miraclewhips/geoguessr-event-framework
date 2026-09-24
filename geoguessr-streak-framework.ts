@@ -28,7 +28,7 @@ type GSF_Options = {
 const CC_DICT = {"AX":"FI","AS":"US","AI":"GB","AW":"NL","BM":"GB","BQ":"NL","BV":"NO","IO":"GB","KY":"UK","CX":"AU","CC":"AU","CK":"NZ","CW":"NL","FK":"GB","FO":"DK","GF":"FR","PF":"FR","TF":"FR","GI":"UK","GL":"DK","GP":"FR","GU":"US","GG":"GB","HM":"AU","HK":"CN","IM":"GB","JE":"GB","MO":"CN","MQ":"FR","YT":"FR","MS":"GB","AN":"NL","NC":"FR","NU":"NZ","NF":"AU","MP":"US","PS":"IL","PN":"GB","PR":"US","RE":"FR","BL":"FR","SH":"GB","MF":"FR","PM":"FR","SX":"NL","GS":"GB","SJ":"NO","TK":"NZ","TC":"GB","UM":"US","VG":"GB","VI":"US","WF":"FR","EH":"MA"};
 
 class GeoGuessrStreakFramework {
-	public events;
+	public events: any;
 
 	private state: GSF_State = this.defaultState();
 	private current_round: number = 0;
@@ -76,7 +76,7 @@ class GeoGuessrStreakFramework {
 
 		this.events = THE_WINDOW['GeoGuessrEventFramework'];
 
-		this.events.init().then(GEF => {
+		this.events.init().then((GEF: any) => {
 			console.log('GeoGuessr Streak Framework initialised.');
 
 			const addEvents = () => {
@@ -86,7 +86,7 @@ class GeoGuessrStreakFramework {
 				const observer = new MutationObserver(this.checkState.bind(this));
 				observer.observe(el, { subtree: true, childList: true });
 
-				GEF.events.addEventListener('round_start', (event) => {
+				GEF.events.addEventListener('round_start', (event: any) => {
 					this.current_round = event.detail.current_round;
 					this.should_update_round_panel = true;
 					this.updateStreakPanels();
@@ -94,7 +94,7 @@ class GeoGuessrStreakFramework {
 
 				const event_name = this.options.streak_type === 'game' ? 'game_end' : 'round_end';
 
-				GEF.events.addEventListener(event_name, (event) => {
+				GEF.events.addEventListener(event_name, (event: any) => {
 					this.should_update_summary_panel = true;
 					this.stopRound(event.detail);
 				});
@@ -106,6 +106,17 @@ class GeoGuessrStreakFramework {
 				addEvents();
 			}
 		});
+
+		this.addStyles();
+	}
+
+	private addStyles(): void {
+		if(document.getElementById('geoguessr-streak-framework-styles')) return;
+		const styles = document.createElement('style');
+		styles.id = 'geoguessr-streak-framework-styles';
+		styles.innerText = '.streak-counter-container { position: absolute; top: 100%; right: 1rem; max-width: calc(100% - 2rem); padding: 0 0.5rem 0.25rem 0.5rem; background-color: var(--ds-color-purple-90); display: flex; justify-content: flex-end; font-size: 14px; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; text-align: center; } .streak-counter-section + .streak-counter-section { padding-left: 0.5rem; margin-left: 0.5rem; border-left: 1px solid var(--ds-color-purple-50); } .streak-counter-section-label { font-size: 10px; color: var(--ds-color-purple-20); }';
+
+		document.body.appendChild(styles);
 	}
 
 	private defaultState(): GSF_State {
@@ -148,19 +159,24 @@ class GeoGuessrStreakFramework {
 		let panel = this.getRoundPanel();
 	
 		if(!panel) {
-			let gameScore = document.querySelector('div[class^="game_status__"] div[class^="status_section"][data-qa="score"]');
+			let gameScore = document.querySelector('div[class^="rounds-status_panel__"]');
 	
 			if(gameScore) {
+				let container = gameScore.querySelector('.streak-counter-container');
+
+				if(!container) {
+					container = document.createElement('div');
+					container.className = 'streak-counter-container';
+					gameScore.appendChild(container);
+				}
+
 				let panel = document.createElement('div');
 				panel.id = `streak-counter-panel-${this.options.storage_identifier}`;
-				panel.style.display = 'flex';
+				panel.className = 'streak-counter-section';
 	
-				let classLabel = gameScore.querySelector('div[class^="status_label"]').className;
-				let valueLabel = gameScore.querySelector('div[class^="status_value"]').className;
+				panel.innerHTML = `<div class="streak-counter-section-label">${this.options.name.toUpperCase()}</div><div id="streak-counter-value-${this.options.storage_identifier}" class="streak-counter-section-value"></div></div>`;
 	
-				panel.innerHTML = `<div class="${gameScore.getAttribute('class')}"><div class="${classLabel}">${this.options.name.toUpperCase()}</div><div id="streak-counter-value-${this.options.storage_identifier}" class="${valueLabel}"></div></div>`;
-	
-				gameScore.parentNode.append(panel);
+				container.appendChild(panel);
 			}
 		}
 		
@@ -248,7 +264,7 @@ class GeoGuessrStreakFramework {
 		return await fetch(apiUrl).then(res => res.json());
 	}
 	
-	private isAutoStreakDisabled(eventState): boolean {
+	private isAutoStreakDisabled(eventState: any): boolean {
 		return (!this.options.automatic || (eventState.is_challenge_link && !this.options.enabled_on_challenges));
 	}
 
@@ -268,7 +284,7 @@ class GeoGuessrStreakFramework {
 		return 'Undefined';
 	}
 
-	private async stopRound(eventState): Promise<void> {
+	private async stopRound(eventState: any): Promise<void> {
 		if(this.isAutoStreakDisabled(eventState)) return;
 	
 		this.updateStreakPanels();

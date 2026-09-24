@@ -46,7 +46,7 @@ class GeoGuessrStreakFramework {
             throw new Error('GeoGuessr Streak Framework requires GeoGuessr Event Framework (https://github.com/miraclewhips/geoguessr-event-framework). Please include this before you include GeoGuessr Streak Framework.');
         }
         this.events = THE_WINDOW['GeoGuessrEventFramework'];
-        this.events.init().then(GEF => {
+        this.events.init().then((GEF) => {
             console.log('GeoGuessr Streak Framework initialised.');
             const addEvents = () => {
                 let el = document.querySelector('#__next');
@@ -72,6 +72,15 @@ class GeoGuessrStreakFramework {
                 addEvents();
             }
         });
+        this.addStyles();
+    }
+    addStyles() {
+        if (document.getElementById('geoguessr-streak-framework-styles'))
+            return;
+        const styles = document.createElement('style');
+        styles.id = 'geoguessr-streak-framework-styles';
+        styles.innerText = '.streak-counter-container { position: absolute; top: 100%; right: 1rem; max-width: calc(100% - 2rem); padding: 0 0.5rem 0.25rem 0.5rem; background-color: var(--ds-color-purple-90); display: flex; justify-content: flex-end; font-size: 14px; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; text-align: center; } .streak-counter-section + .streak-counter-section { padding-left: 0.5rem; margin-left: 0.5rem; border-left: 1px solid var(--ds-color-purple-50); } .streak-counter-section-label { font-size: 10px; color: var(--ds-color-purple-20); }';
+        document.body.appendChild(styles);
     }
     defaultState() {
         return {
@@ -105,15 +114,19 @@ class GeoGuessrStreakFramework {
     updateRoundPanel() {
         let panel = this.getRoundPanel();
         if (!panel) {
-            let gameScore = document.querySelector('div[class^="game_status__"] div[class^="status_section"][data-qa="score"]');
+            let gameScore = document.querySelector('div[class^="rounds-status_panel__"]');
             if (gameScore) {
+                let container = gameScore.querySelector('.streak-counter-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'streak-counter-container';
+                    gameScore.appendChild(container);
+                }
                 let panel = document.createElement('div');
                 panel.id = `streak-counter-panel-${this.options.storage_identifier}`;
-                panel.style.display = 'flex';
-                let classLabel = gameScore.querySelector('div[class^="status_label"]').className;
-                let valueLabel = gameScore.querySelector('div[class^="status_value"]').className;
-                panel.innerHTML = `<div class="${gameScore.getAttribute('class')}"><div class="${classLabel}">${this.options.name.toUpperCase()}</div><div id="streak-counter-value-${this.options.storage_identifier}" class="${valueLabel}"></div></div>`;
-                gameScore.parentNode.append(panel);
+                panel.className = 'streak-counter-section';
+                panel.innerHTML = `<div class="streak-counter-section-label">${this.options.name.toUpperCase()}</div><div id="streak-counter-value-${this.options.storage_identifier}" class="streak-counter-section-value"></div></div>`;
+                container.appendChild(panel);
             }
         }
         let streak = document.getElementById(`streak-counter-value-${this.options.storage_identifier}`);
